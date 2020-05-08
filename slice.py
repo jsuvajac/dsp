@@ -1,10 +1,7 @@
 import wave
+import numpy as np
+import matplotlib.pyplot as plt
 import struct
-
-def main():
-    wav = Slice('input/piano.wav')
-    wav.read(100000, 45000)
-    wav.write('out.wav', repeats=10, speed=)
 
 class Slice:
     def __init__(self, file):
@@ -16,14 +13,14 @@ class Slice:
     def read(self, num_samples=0, offset=0):
         if num_samples > self.file.getnframes():
             return
-        if offset > 0:
-            frame = self.file.readframes(offset)
+        # if samples not provided will read entire file
         if num_samples == 0:
-            frame = self.file.readframes(self.file.getnframes())
-        else:
-            frame = self.file.readframes(num_samples)
-        self.samples = struct.unpack(f"<{str(num_samples)}h", frame)
-        self.file.rewind()
+            num_samples = self.file.getnframes()
+
+        self.samples = np.frombuffer(
+            self.file.readframes(num_samples),
+            offset=offset,
+            dtype=np.int16)
 
     def write(self, out_name, repeats=1, speed=1):
         if speed == 0:
@@ -40,6 +37,7 @@ class Slice:
             for x in range(len(self.samples)):
                 out_list.append(self.samples[x])
 
+        # TODO: breakup into methods
         # write
         if speed >= 1:
             for i in range(len(out_list)):
@@ -60,7 +58,17 @@ class Slice:
                     out.writeframesraw(struct.pack("<h", out_list[-i]))
         
         out.close()
-        
 
-if __name__ == "__main__":
-    main()
+    def plot(self):
+        # wav
+        plt.figure(1)
+        plot_a = plt.subplot(211)
+        plot_a.plot(self.samples)
+        plot_a.set_ylabel('amplitude')
+
+        #spectrograph
+        plot_b = plt.subplot(212)
+        plot_b.specgram(self.samples, Fs=self.file.getframerate())
+        plot_b.set_xlabel('time')
+        plot_b.set_ylabel('frequency')
+        plt.show()
