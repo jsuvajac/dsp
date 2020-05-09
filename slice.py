@@ -5,9 +5,7 @@ import struct
 
 class Slice:
     def __init__(self, file):
-        self.file_name = file
         self.file = wave.open(file, 'rb')
-        self.file_params = self.file.getparams()
         self.samples = []
 
     def read(self, num_samples=0, offset=0):
@@ -21,7 +19,7 @@ class Slice:
             self.file.readframes(num_samples),
             offset=offset,
             dtype=np.int16)
-
+ 
     def write(self, out_name, repeats=1, speed=1):
         if speed == 0:
             return
@@ -58,6 +56,7 @@ class Slice:
                     out.writeframesraw(struct.pack("<h", out_list[-i]))
         
         out.close()
+        return out_list
 
     def plot(self):
         # wav
@@ -68,7 +67,7 @@ class Slice:
 
         #spectrograph
         plot_b = plt.subplot(212)
-        plot_b.specgram(self.samples, Fs=self.file.getframerate())
+        plot_b.specgram(self.samples, Fs=self.file.getframerate(), NFFT=1024)
         plot_b.set_xlabel('time')
         plot_b.set_ylabel('frequency')
         plt.show()

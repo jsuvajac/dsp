@@ -1,6 +1,30 @@
 # dsp
 Digital signal processing playground
 
+## TODO
+- impulse response engine
+- ADSR
+
+### Oscillators
+- sine
+- square
+- grain
+
+### Filters
+- low pass
+- high pass
+
+### FX
+- distorsion
+- reverb
+- delay
+- phase
+
+### realtime processing
+- port to c/c++ or rust
+- MIDI
+- GUI
+
 ## Slice
 - read a portion or entire wav file into a buffer
 - speed up the buffer by removing frames
