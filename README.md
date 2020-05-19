@@ -1,8 +1,6 @@
 # dsp
 Digital signal processing playground
 
-- Attempting to setup an asio-based c++ audio environment to do dsp in real time.
-
 ## Slice
 - read a portion or entire wav file into a buffer
 - speed up the buffer by removing frames
