@@ -2,9 +2,10 @@
 if not exist build mkdir build
 pushd build
 cl -EHsc -Zi -FC -O2^
-    ..\src\* ^
+    ..\src\*^
 	-Fe:engine.exe^
-    -I ..\include -I^
+    -I ..\include^
+    -I ..\asiosdk\common -I ..\asiosdk\host^
     Shell32.lib^
     -link -SUBSYSTEM:CONSOLE -PDB:vc140.pdb 
 popd
