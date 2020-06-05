@@ -1,14 +1,20 @@
+from __future__ import annotations
+
 import wave
 import numpy as np
 import matplotlib.pyplot as plt
 import struct
 
 class Slice:
-    def __init__(self, file):
+    def __init__(self, file: str):
         self.file = wave.open(file, 'rb')
         self.samples = []
+        # plot
+        self.fig = None
+        self.wav_plot = None
+        self.spec_plot = None
 
-    def read(self, num_samples=0, offset=0):
+    def read(self, num_samples: int = 0, offset: int = 0):
         if num_samples > self.file.getnframes():
             return
         # if samples not provided will read entire file
@@ -19,8 +25,8 @@ class Slice:
             self.file.readframes(num_samples),
             offset=offset,
             dtype=np.int16)
- 
-    def write(self, out_name, repeats=1, speed=1):
+
+    def write(self, out_name: str, repeats: int = 1, speed: float = 1):
         if speed == 0:
             return
         out = wave.open(out_name, 'wb')
@@ -58,16 +64,58 @@ class Slice:
         out.close()
         return out_list
 
+    def write_slice(self, out_name: str, start: int, end: int):
+        out = wave.open(out_name, 'wb')
+        out.setnchannels(1)
+        out.setsampwidth(2)
+        out.setframerate(44100.0)
+
+        for i in range(start, end):
+            out.writeframesraw(struct.pack("<h", self.samples[i]))
+
+    #TODO: separate gui form slice
+    #TODO: integrate with tkinter
     def plot(self):
         # wav
-        plt.figure(1)
-        plot_a = plt.subplot(211)
-        plot_a.plot(self.samples)
-        plot_a.set_ylabel('amplitude')
+        self.fig = plt.figure(1)
+        self.wav_plot = plt.subplot(211)
+        self.wav_plot.plot(self.samples)
+        self.wav_plot.set_ylabel('amplitude')
 
         #spectrograph
-        plot_b = plt.subplot(212)
-        plot_b.specgram(self.samples, Fs=self.file.getframerate(), NFFT=1024)
-        plot_b.set_xlabel('time')
-        plot_b.set_ylabel('frequency')
+        self.spec_plot = plt.subplot(212)
+        self.spec_plot.specgram(self.samples, Fs=self.file.getframerate(), NFFT=1024)
+        self.spec_plot.set_xlabel('time')
+        self.spec_plot.set_ylabel('frequency')
+        #cid = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
+
+        # TEMP: get 2 cutting points
+        i = 1
+        try: 
+            while True:
+                self.setTitle("Select 2 cutting points")
+                pts = np.asarray(plt.ginput(2, timeout=-1))
+                x_pts = np.sort(pts[:,0])
+                self.setTitle("Press a key to save slice or mous button to skip")
+                if plt.waitforbuttonpress():
+                    self.write_slice("slice_"+str(i)+".wav",int(x_pts[0]), int(x_pts[1]))
+                i += 1
+        except Exception:
+            print("quit plot")
+
         plt.show()
+
+    #TODO: implement slicing with event callback
+    def onclick(self,event: Event):
+        try:
+            print('%s click: button=%d, x=%d, y=%d, xdata=%f, ydata=%f' %
+                'double' if event.dblclick else 'single', event.button,
+                event.x, event.y, event.xdata, event.ydata)
+            
+        except Exception:
+            # ignore clicks outside of plotts
+            pass
+
+    def setTitle(self, s: str):
+        self.wav_plot.set_title(s, fontsize=16)
+        plt.draw()
