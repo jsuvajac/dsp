@@ -1,3 +1,4 @@
-*.wav
 __pycache__/
-build/*
+*.pyo
+*.pyc
+input/*_slice_*.wav

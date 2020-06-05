@@ -2,9 +2,11 @@
 Digital signal processing playground
 
 ## GUI
-- select start and endpoint of a new slice
+- load in wave files
+- plot amplitude and spectral graphs
+- left, right arrow keys cycle through wave file
+- click on wave graph to select start and endpoints of a new slice
 - write new slice to file
-- left, right arrow keys cycle through slices
 
 ## Slice
 - read a portion or entire wav file into a buffer
@@ -12,4 +14,3 @@ Digital signal processing playground
 - slow down the buffer by repeting frames
 - reverse the buffer by writing it backwards
 - write to a new wave file
-- plot amplitude and spectral graphs
