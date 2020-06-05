@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import wave
+import simpleaudio as sa # TODO: replace with pyaudio
 import numpy as np
 import matplotlib.pyplot as plt
 import struct
 
 class Slice:
     def __init__(self, file: str):
+        self.path = file
         self.file = wave.open(file, 'rb')
         self.samples = []
         # plot
@@ -73,6 +75,10 @@ class Slice:
         for i in range(start, end):
             out.writeframesraw(struct.pack("<h", self.samples[i]))
 
+    def play(self, start=0, end=-1):
+        play_obj = sa.play_buffer(self.samples[start:end], 1, 2, 44100)
+        #play_obj.wait_done()
+
     #TODO: separate gui form slice
     #TODO: integrate with tkinter
     def plot(self):
@@ -101,7 +107,7 @@ class Slice:
                     self.write_slice("slice_"+str(i)+".wav",int(x_pts[0]), int(x_pts[1]))
                 i += 1
         except Exception:
-            print("quit plot")
+            print(f"quit plot: {self.path}")
 
         plt.show()
 
