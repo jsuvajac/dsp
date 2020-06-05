@@ -4,6 +4,7 @@ Digital signal processing playground
 ## GUI
 - select start and endpoint of a new slice
 - write new slice to file
+- left, right arrow keys cycle through slices
 
 ## Slice
 - read a portion or entire wav file into a buffer

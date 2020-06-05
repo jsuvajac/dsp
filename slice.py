@@ -3,7 +3,6 @@ from __future__ import annotations
 import wave
 import simpleaudio as sa # TODO: replace with pyaudio
 import numpy as np
-import matplotlib.pyplot as plt
 import struct
 
 class Slice:
@@ -78,50 +77,3 @@ class Slice:
     def play(self, start=0, end=-1):
         play_obj = sa.play_buffer(self.samples[start:end], 1, 2, 44100)
         #play_obj.wait_done()
-
-    #TODO: separate gui form slice
-    #TODO: integrate with tkinter
-    def plot(self):
-        # wav
-        self.fig = plt.figure(1)
-        self.wav_plot = plt.subplot(211)
-        self.wav_plot.plot(self.samples)
-        self.wav_plot.set_ylabel('amplitude')
-
-        #spectrograph
-        self.spec_plot = plt.subplot(212)
-        self.spec_plot.specgram(self.samples, Fs=self.file.getframerate(), NFFT=1024)
-        self.spec_plot.set_xlabel('time')
-        self.spec_plot.set_ylabel('frequency')
-        #cid = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
-
-        # TEMP: get 2 cutting points
-        i = 1
-        try: 
-            while True:
-                self.setTitle("Select 2 cutting points")
-                pts = np.asarray(plt.ginput(2, timeout=-1))
-                x_pts = np.sort(pts[:,0])
-                self.setTitle("Press a key to save slice or mous button to skip")
-                if plt.waitforbuttonpress():
-                    self.write_slice("slice_"+str(i)+".wav",int(x_pts[0]), int(x_pts[1]))
-                i += 1
-        except Exception:
-            print(f"quit plot: {self.path}")
-
-        plt.show()
-
-    #TODO: implement slicing with event callback
-    def onclick(self,event: Event):
-        try:
-            print('%s click: button=%d, x=%d, y=%d, xdata=%f, ydata=%f' %
-                'double' if event.dblclick else 'single', event.button,
-                event.x, event.y, event.xdata, event.ydata)
-            
-        except Exception:
-            # ignore clicks outside of plotts
-            pass
-
-    def setTitle(self, s: str):
-        self.wav_plot.set_title(s, fontsize=16)
-        plt.draw()
