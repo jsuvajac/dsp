@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from slice import Slice
 
 import matplotlib.pyplot as plt
@@ -13,7 +14,7 @@ class Gui:
         self.fig = None
 
     def add_slice (self, slice: Slice):
-        print(slice.path)
+        #print(slice.path)
         self.slices.append(slice)
         if self.slice is None:
             self.slice = self.slices[0]
@@ -38,6 +39,7 @@ class Gui:
         cid = self.fig.canvas.mpl_connect('key_press_event', self.on_key)
         plt.draw()
 
+    #TODO: implement a verticla threshold based slicing methode
     def run(self):
         self.plot()
         i = 1
@@ -66,6 +68,7 @@ class Gui:
 
     def setTitle(self, s: str):
         self.wav_plot.set_title(s, fontsize=16)
+        plt.suptitle(self.slice.path)
         plt.draw()
 
     def on_key(self, event: Event):

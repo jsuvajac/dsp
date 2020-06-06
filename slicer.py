@@ -2,14 +2,16 @@ from slice import Slice
 from gui import Gui
 
 import sys
+import os
 
 # example: 
 # ls input | awk '$0="input/"$0' | python3 slicer.py
 
 def main(argc, argv):
     files = []
+    wav_dir = 'input'
     #TODO: more robust argparsing
-    if argc == 1:
+    if argc == 1: # pipe support
         while True:
             try:
                 filename = input()
@@ -18,27 +20,33 @@ def main(argc, argv):
             if filename == "":
                 break
             files.append(filename)
+
     elif argc == 2 and (argv[1] == '-h' or argv[1] == '--help'): 
         print("Usage: slicer.py [FILE]")
         exit(0)
-    #TODO: replace with -d directory searching command
-    elif argc == 2 and argv[1] == '-m': 
-        files.append('input/piano.wav')
-        files.append('input/reverse_piano.wav')
 
-    elif argc == 2:
+    elif argc == 2 and argv[1] == '-d': # directory
+        for _, _, f in os.walk(wav_dir):
+            files = f
+            break
+        for i in range(len(files)):
+            files[i] = wav_dir +'/'+ files[i]
+
+    elif argc == 2 and argv[1] == '-t': # testing
+        files.append('input/piano.wav')
+
+    elif argc == 2: # single file
         files.append(argv[1])
     
     gui = Gui()
 
     for file in files:
-        print(filename)
         slice = Slice(file)
         slice.read()
         gui.add_slice(slice)
 
     gui.run()
 
-    #wav.write('out.wav', repeats=1, speed=-1/2)
+
 if __name__ == "__main__":
     main(len(sys.argv), sys.argv)
