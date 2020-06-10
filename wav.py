@@ -5,7 +5,7 @@ import numpy as np
 import wave
 import struct
 
-class Slice:
+class Wav:
     def __init__(self, file: str):
         self.path = file
         self.file = wave.open(file, 'rb')

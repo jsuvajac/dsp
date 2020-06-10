@@ -1,14 +1,13 @@
-from slice import Slice
+from wav import *
 from gui import *
 
 import sys
 import os
 
-# example: 
-# ls input | awk '$0="input/"$0' | python3 slicer.py
 
 def main(argc, argv):
     files = []
+    wave_slices = []
     wav_dir = 'input'
     #TODO: more robust argparsing
     if argc == 1: # pipe support
@@ -38,7 +37,7 @@ def main(argc, argv):
     elif argc == 2: # single file
         files.append(argv[1])
     
-    gui = Gui()
+    gui = Window()
 
     for file in files:
         try:
@@ -47,9 +46,13 @@ def main(argc, argv):
             print(f'file "{file}" does not exist!')
         else:
             f.close()
-            slice = Slice(file)
+            slice = Wav(file)
             slice.read()
-            gui.add_slice(slice)
+            wave_slices.append(slice)
+            #gui.add_slice(slice)
+    gui.add_slice(wave_slices[0])
+    gui.display_files(files)
+    gui.plot()
     gui.run()
     
 
