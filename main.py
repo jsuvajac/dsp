@@ -4,9 +4,6 @@ from gui import *
 import sys
 import os
 
-# example: 
-# ls input | awk '$0="input/"$0' | python3 slicer.py
-
 def main(argc, argv):
     files = []
     wav_dir = 'input'
@@ -38,7 +35,7 @@ def main(argc, argv):
     elif argc == 2: # single file
         files.append(argv[1])
     
-    gui = Gui()
+    gui = Graphs()
 
     for file in files:
         try:
@@ -50,6 +47,7 @@ def main(argc, argv):
             slice = Slice(file)
             slice.read()
             gui.add_slice(slice)
+    win = Window()
     gui.run()
     
 

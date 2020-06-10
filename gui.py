@@ -41,6 +41,8 @@ class Gui:
 
     #TODO: implement a verticla threshold based slicing methode
     def run(self):
+        if self.slice is None:
+            return
         self.plot()
         i = 1
         try: 
