@@ -7,8 +7,12 @@ import os
 
 def main(argc, argv):
     files = []
+
+    dir_list = ['input']
+    dirs = {}
+
     wave_slices = []
-    wav_dir = 'input'
+
     #TODO: more robust argparsing
     if argc == 1: # pipe support
         while True:
@@ -24,12 +28,20 @@ def main(argc, argv):
         print("Usage: slicer.py [FILE]")
         exit(0)
 
-    elif argc == 2 and argv[1] == '-d': # directory
-        for _, _, f in os.walk(wav_dir):
-            files = f
-            break
-        for i in range(len(files)):
-            files[i] = wav_dir +'/'+ files[i]
+    elif argv[1] == '-d': # directory
+        if argc == 2:
+            pass
+        if argc > 2:
+            for in_dir in argv[2:]:
+                dir_list.append(in_dir)
+
+        for folder in dir_list:
+            for _, _, f in os.walk(folder):
+                dirs[folder] = f
+                for file in dirs[folder]:
+                    files.append(folder +'/'+ file)
+
+        #print(dirs)
 
     elif argc == 2 and argv[1] == '-t': # testing
         files.append('input/piano.wav')
@@ -37,22 +49,29 @@ def main(argc, argv):
     elif argc == 2: # single file
         files.append(argv[1])
     
+    
     gui = Window()
-
+    bad_files = []
     for file in files:
         try:
             f = open(file,"r")
         except FileNotFoundError:
             print(f'file "{file}" does not exist!')
+            bad_files.append(file)
         else:
             f.close()
-            slice = Wav(file)
-            slice.read()
-            wave_slices.append(slice)
-            #gui.add_slice(slice)
+            try:
+                slice = Wav(file)
+            except Exception:
+                print(f'cannot open file: {file}')
+                bad_files.append(file)
+            else:
+                wave_slices.append(slice)
+
+    files = list(set(files).symmetric_difference(set(bad_files)))
     gui.add_slice(wave_slices[0])
     gui.display_files(files)
-    gui.plot()
+    gui.gui_setup()
     gui.run()
     
 
