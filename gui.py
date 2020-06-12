@@ -45,8 +45,9 @@ class Window:
         self.root = Tk()
         self.root.title("slicer")
         self.root.geometry('800x600') 
-
-
+        self.root.protocol("WM_DELETE_WINDOW", self.root.quit)
+        
+        #TODO: imporve gui with frames
         self.fig = None
         self.canvas = None
         self.slice = None
@@ -75,10 +76,12 @@ class Window:
         self.spec_plot.specgram(self.slice.samples, Fs=self.slice.file.getframerate(), NFFT=1024)
         self.spec_plot.set_xlabel('time')
         self.spec_plot.set_ylabel('frequency')
-
+   
+    def gui_setup(self):
+        self.plot()
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
         self.canvas.get_tk_widget().pack(side=LEFT, fill=BOTH, expand=1)
-        self.canvas.mpl_connect('button_press_event', self.onclick)
+        self.canvas.mpl_connect('button_press_event', self.on_click)
         self.canvas.mpl_connect('key_press_event', self.on_key)
         self.canvas.draw()
 
@@ -86,23 +89,24 @@ class Window:
         self.toolbar.update()
         self.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
 
-        button = Button(master=self.root, text="Quit", command=self.root.quit)
+        button = ttk.Button(master=self.root, text="Quit", command=self.root.quit)
         button.pack(side=LEFT)
 
-        button = Button(master=self.root, text="Play", command=self.slice.play)
-        button.pack(side=TOP)
+
+        self.play_button = ttk.Button(master=self.root, text="Play", command=self.slice.play)
+        self.play_button.pack(side=TOP)
+        self.stop_button = ttk.Button(master=self.root, text="Stop", command=self.slice.stop)
+        self.stop_button.pack(side=TOP)
 
 
     def display_files(self,files):
+        self.tree = ttk.Treeview(self.root)
+        self.tree.bind("<Double-1>", self.on_file_select)
+        self.tree.heading("#0",text="wav files",anchor=W)
+        self.tree.pack(side=LEFT, fill=BOTH, expand=1)
 
-        tree = ttk.Treeview(self.root)
-        tree.heading("#0",text="wav files",anchor=W)
         for f in files:
-            tree.insert("", 0, text=f)
-
-        #tree.grid(column=0, row=1, columnspan =5)
-        tree.pack(side=LEFT, fill=BOTH, expand=1)
-
+            self.tree.insert("", 0, text=f)
 
     def run(self):
         self.root.mainloop()
@@ -112,14 +116,23 @@ class Window:
         plt.suptitle(self.slice.path)
         plt.draw()
 
+    def on_file_select(self, event: Event):
+        item = self.tree.selection()[0]
+        file_path = self.tree.item(item,"text")
+        print("you clicked on", file_path)
+        self.add_slice(Wav(file_path))
+        self.plot()
+        self.play_button['command'] = self.slice.play
+        self.stop_button['command'] = self.slice.stop
+        #print(self.play_button['command'])
+
     def on_key(self, event: Event):
         key_press_handler(event, self.canvas)
         print('you pressed', event.key, event.xdata, event.ydata)
         if event.key == "escape":
             self.root.quit()
 
-
-    def onclick(self, event: Event):
+    def on_click(self, event: Event):
         try:
             print(event)
             
