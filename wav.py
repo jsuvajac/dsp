@@ -9,11 +9,12 @@ class Wav:
     def __init__(self, file: str):
         self.path = file
         self.file = wave.open(file, 'rb')
-        self.samples = []
-        # plot
-        self.fig = None
-        self.wav_plot = None
-        self.spec_plot = None
+
+        self.samples = [] # non mutable buffer read from file
+        self.slice_samples = [] # mutable file to be updated by repeat and speed_change
+
+        self.play_object = None
+        self.read()
 
     def read(self, num_samples: int = 0, offset: int = 0):
         if num_samples > self.file.getnframes():
@@ -26,30 +27,30 @@ class Wav:
             self.file.readframes(num_samples),
             offset=offset,
             dtype=np.int16)
+        self.slice_samples = self.samples.copy()
+        #print(self.samples)
 
-    def repeat(self, repeats: int = 1):
+    def apply_repeat(self, repeats: int = 1):
         out_list = []
         for i in range(repeats):
-            for x in range(len(self.samples)):
-                out_list.append(self.samples[x])
-        self.samples = out_list
+            for x in range(len(self.slice_samples)):
+                out_list.append(self.slice_samples[x])
+        self.slice_samples = out_list
 
-    def update_speed(self, speed: float = 1):
+    def apply_speed_change(self, speed: float = 1):
         out_list = []
         if speed == 0:
             return
-        # write
-        if speed >= 1:
-            out_list = [self.samples[i] for i in range(len(self.samples)) if i % speed == 0]
-        elif speed <= -1:
-            out_list = [self.samples[-i] for i in range(len(self.samples)) if i % speed == 0]
-        # slowdown
-        elif speed < 1 and speed > 0:
-            out_list = [self.samples[i] for i in range(len(self.samples)) for x in range(int(1/speed))]
-        elif speed > -1 and speed < 0:
-            out_list = [self.samples[-i] for i in range(len(self.samples)) for x in range(-int(1/speed))]
+        if speed >= 1: # speedup
+            out_list = [self.slice_samples[i] for i in range(len(self.slice_samples)) if i % speed == 0]
+        elif speed <= -1: # speedup and reverse
+            out_list = [self.slice_samples[-i] for i in range(len(self.slice_samples)) if i % speed == 0]
+        elif speed < 1 and speed > 0: # slowdown
+            out_list = [self.slice_samples[i] for i in range(len(self.slice_samples)) for x in range(int(1/speed))]
+        elif speed > -1 and speed < 0: # slowdown and reverse
+            out_list = [self.slice_samples[-i] for i in range(len(self.slice_samples)) for x in range(-int(1/speed))]
             
-        self.samples = out_list
+        self.slice_samples = out_list
         
     def write_slice(self, out_name: str, start: int, end: int):
         out = wave.open(out_name, 'wb')
@@ -58,9 +59,11 @@ class Wav:
         out.setframerate(44100.0)
 
         for i in range(start, end):
-            out.writeframesraw(struct.pack("<h", self.samples[i]))
+            out.writeframesraw(struct.pack("<h", self.slice_samples[i]))
 
-    #TODO: fix playback after speed or repeat change
     def play(self, start=0, end=-1):
-        play_obj = sa.play_buffer(self.samples[start:end], 1, 2, 44100)
+        self.play_object = sa.play_buffer(self.slice_samples[start:end], 1, 2, 44100)
         #play_obj.wait_done()
+
+    def stop(self):
+        sa.stop_all()
