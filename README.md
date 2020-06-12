@@ -1,16 +1,21 @@
-# dsp
-Digital signal processing playground
+# Slicer
+Simple wave file slicer and sampler
 
 ## GUI
-- load in wave files
-- plot amplitude and spectral graphs
-- left, right arrow keys cycle through wave file
-- click on wave graph to select start and endpoints of a new slice
-- write new slice to file
+* load in wave files
+* plot amplitude and spectral graphs
+* select file from file list
+* play/stop
 
 ## Slice
-- read a portion or entire wav file into a buffer
-- speed up the buffer by removing frames
-- slow down the buffer by repeting frames
-- reverse the buffer by writing it backwards
-- write to a new wave file
+* Read in a wav file into a non mutable buffer 'samples'
+* Apply changes to the buffer and save the changed buffer as 'slice_samples'
+* The buffer can then be written to a new slice wav file
+
+### Features
+
+    reverse
+    speed up
+    slow down
+    repeat
+
