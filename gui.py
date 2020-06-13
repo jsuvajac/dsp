@@ -13,6 +13,7 @@ import numpy as np
 from tkinter import *
 from tkinter import ttk
 
+slice_dir = "slice"
 
 class Window:
     def __init__(self):
@@ -30,7 +31,10 @@ class Window:
         self.middle_frame.pack(side=TOP, fill=BOTH)
 
         self.bottom_frame = Frame(self.root, width=1200, height=100, padx=5, pady=5, bg='orange')
-        self.bottom_frame.pack(side=BOTTOM, fill=BOTH)
+        self.bottom_frame.pack(side=TOP, fill=X)
+ 
+        self.bottom_tray = Frame(self.root, width=1200, height=100, padx=5, pady=5, bg='orange')
+        self.bottom_tray.pack(side=BOTTOM, fill=BOTH)
                
         # vertical bars in the middle
         self.file_frame = ttk.Frame(self.middle_frame, width=500, height=800)
@@ -43,7 +47,7 @@ class Window:
         self.widget_frame.pack(side=LEFT, fill=BOTH)
 
         # quit btn
-        button = ttk.Button(master=self.bottom_frame, text="Quit", command=self.root.quit)
+        button = ttk.Button(master=self.bottom_tray, text="Quit", command=self.root.quit)
         button.pack(side=LEFT, expand=1)
 
       
@@ -65,10 +69,10 @@ class Window:
         self.wav_plot.set_ylabel('amplitude')
         self.wav_plot.axis('off')
         self.fig.set_facecolor('lightgray')
-        #self.setTitle("Select 2 cutting points")
+        self.setTitle("Select 2 cutting points")
         #spectrograph
         #self.spec_plot = plt.subplot(212)
-        #self.spec_plot.specgram(self.slice.samples, Fs=self.slice.file.getframerate(), NFFT=1024)
+        #self.spec_plot.specgram(self.slice.slice_samples, Fs=self.slice.file.getframerate(), NFFT=1024)
         #self.spec_plot.set_xlabel('time')
         #self.spec_plot.set_ylabel('frequency')
 
@@ -210,7 +214,7 @@ class Window:
     
     def on_write_slice_click(self):
         print('writing slice')
-        self.slice.write_slice("slice")
+        self.slice.write_slice(slice_dir+"/"+"slice")
 
     def on_reset_click(self):
         self.slice.reset_buffer()

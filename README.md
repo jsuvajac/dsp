@@ -1,13 +1,23 @@
 # Slicer
 Simple wave file slicer and sampler
 
-## GUI
+### Run
+```
+python3 slicer.py -d
+```
+
+### Test
+```
+python3 wav.py
+```
+
+## Gui
 * load in wave files
 * plot amplitude and spectral graphs
 * select file from file list
 * play/stop
 
-## Slice
+## Wav
 * Read in a wav file into a non mutable buffer 'samples'
 * Apply changes to the buffer
 * Save the newly formed slice as a new wav file
@@ -19,4 +29,3 @@ Simple wave file slicer and sampler
     slow down
     repeat
     reset to original
-

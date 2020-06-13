@@ -42,7 +42,6 @@ class Wav:
         self.slice_samples = out_list
 
     def apply_speed_change(self, speed: float = 1):
-        print(speed)
         out_list = []
         if speed == 0:
             return
