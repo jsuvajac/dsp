@@ -14,6 +14,7 @@ class Wav:
         self.slice_samples = [] # mutable file to be updated by repeat and speed_change
 
         self.play_object = None
+        self.slice_count = 0
         self.read()
 
     def read(self, num_samples: int = 0, offset: int = 0):
@@ -27,8 +28,11 @@ class Wav:
             self.file.readframes(num_samples),
             offset=offset,
             dtype=np.int16)
+
+        self.reset_buffer()
+
+    def reset_buffer(self):
         self.slice_samples = self.samples.copy()
-        #print(self.samples)
 
     def apply_repeat(self, repeats: int = 1):
         out_list = []
@@ -38,6 +42,7 @@ class Wav:
         self.slice_samples = out_list
 
     def apply_speed_change(self, speed: float = 1):
+        print(speed)
         out_list = []
         if speed == 0:
             return
@@ -51,9 +56,24 @@ class Wav:
             out_list = [self.slice_samples[-i] for i in range(len(self.slice_samples)) for x in range(-int(1/speed))]
             
         self.slice_samples = out_list
-        
-    def write_slice(self, out_name: str, start: int, end: int):
-        out = wave.open(out_name, 'wb')
+
+    def apply_slice(self, start: int, end: int):
+        print(start, end)
+        if start == end:
+            return
+
+        print(len(self.slice_samples))
+
+        if end < start:
+            self.slice_samples = self.slice_samples[start:end]
+        else:
+            self.slice_samples = self.slice_samples[start:end]
+        print(len(self.slice_samples))
+
+    def write_slice(self, out_name: str, start: int = 0, end: int = -1):
+        self.slice_count += 1
+        end = len(self.slice_samples)
+        out = wave.open(out_name+"_"+str(self.slice_count)+".wav", 'wb')
         out.setnchannels(1)
         out.setsampwidth(2)
         out.setframerate(44100.0)
@@ -61,9 +81,44 @@ class Wav:
         for i in range(start, end):
             out.writeframesraw(struct.pack("<h", self.slice_samples[i]))
 
-    def play(self, start=0, end=-1):
-        self.play_object = sa.play_buffer(self.slice_samples[start:end], 1, 2, 44100)
-        #play_obj.wait_done()
+    def play(self, start=0, end=-1, wait=False):
+        self.play_object = sa.play_buffer(np.array(self.slice_samples[start:end]), 1, 2, 44100)
+        if wait:
+            self.play_object.wait_done()
 
     def stop(self):
         sa.stop_all()
+
+if __name__ == "__main__":
+    wav = Wav("input/piano.wav")
+
+    # test 1
+    speeds = [10, -5, 0.25, -0.25, -15, -0.5]
+    for s in speeds:
+        print(f"x {s}:")
+        wav.apply_speed_change(s)
+        wav.play(wait=True)
+
+    wav.apply_repeat(2)
+    print(f"after 2 repeats:")
+    wav.play(wait=True)
+
+    print()
+    wav.reset_buffer()
+
+
+    # test 2
+    print("speed up and slow down by the same factor -> distorsion")
+    wav.apply_speed_change(22) # speed up for the sake of time
+    factor = 5
+    repeat = 4
+
+    for s in range(repeat):
+        wav.apply_speed_change(1/factor)
+        print(f"x {s} len: {len(wav.slice_samples)}")
+        wav.play(wait=True)
+
+        wav.apply_speed_change(factor)
+        print(f"x {s} len: {len(wav.slice_samples)}")
+        wav.play(wait=True)
+        print()

@@ -9,13 +9,14 @@ Simple wave file slicer and sampler
 
 ## Slice
 * Read in a wav file into a non mutable buffer 'samples'
-* Apply changes to the buffer and save the changed buffer as 'slice_samples'
-* The buffer can then be written to a new slice wav file
+* Apply changes to the buffer
+* Save the newly formed slice as a new wav file
 
-### Features
+### Sample modifying features
 
     reverse
     speed up
     slow down
     repeat
+    reset to original
 
