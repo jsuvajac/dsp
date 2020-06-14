@@ -76,7 +76,9 @@ class Window:
         #self.spec_plot.set_xlabel('time')
         #self.spec_plot.set_ylabel('frequency')
 
-        plt.draw()
+        if self.canvas:
+            self.canvas.draw()
+        
    
     def gui_setup(self):
         self.plot()
@@ -185,7 +187,7 @@ class Window:
                 self.wav_plot.axvline(x=x, color = 'r')
         else:
             self.reset_plot()
-        plt.draw()
+        self.canvas.draw()
 
     def reset_plot(self):
         self.locators = []
