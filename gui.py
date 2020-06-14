@@ -174,22 +174,18 @@ class Window:
 
     def on_click(self, event: Event):
         #print(event)
-        try:
-            if event.button == 1:
-                self.locators.append(int(event.xdata))
-                if len(self.locators) > 2:
-                    self.locators.pop(0)
-                    self.fig.clf()
-                    self.plot()
-                print(self.locators)
-                for x in self.locators:
-                    self.wav_plot.axvline(x=x, color = 'r')
-            else:
-                self.reset_plot()
-            plt.draw()
-        except Exception:
-            # ignore clicks outside of plot
-            pass
+        if event.button == 1:
+            self.locators.append(int(event.xdata))
+            if len(self.locators) > 2:
+                self.locators.pop(0)
+                self.fig.clf()
+                self.plot()
+            print(self.locators)
+            for x in self.locators:
+                self.wav_plot.axvline(x=x, color = 'r')
+        else:
+            self.reset_plot()
+        plt.draw()
 
     def reset_plot(self):
         self.locators = []
@@ -199,7 +195,10 @@ class Window:
     def on_slice_click(self):
         print(self.locators)
         self.locators = np.sort(self.locators)
-        self.slice.apply_slice(self.locators[0], self.locators[1])
+        if len(self.locators) == 2:
+            if self.locators[0] < 0:
+                self.locators[0] = 0
+            self.slice.apply_slice(self.locators[0], self.locators[1])
         self.reset_plot()
 
 

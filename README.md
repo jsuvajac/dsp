@@ -3,6 +3,7 @@ Simple wave file slicer and sampler
 
 ### Run
 ```
+pip3 install -r requirements.txt
 python3 slicer.py -d
 ```
 
