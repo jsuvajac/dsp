@@ -70,7 +70,7 @@ class Wav:
 
     def write_slice(self, out_name: str, start: int = 0, end: int = -1):
         end = len(self.slice_samples)
-        out = wave.open(out_name+".wav", 'wb')
+        out = wave.open(out_name, 'wb')
         out.setnchannels(1)
         out.setsampwidth(2)
         out.setframerate(44100.0)

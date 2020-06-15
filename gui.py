@@ -51,13 +51,18 @@ class Window:
         button = ttk.Button(master=self.bottom_tray, text="Quit", command=self.root.quit)
         button.pack(side=LEFT, expand=1)
 
+        button = ttk.Button(master=self.bottom_tray, text="Spectral Plot", command=self.on_display_spectral)
+        button.pack(side=LEFT, expand=1)
+
+        self.display_spectral = False
+
         self.fig = None
         self.canvas = None
         self.tree = None
         self.locators = []
 
         self.files = files
-        self.slice_count = 0
+        self.slice_count = 1
         self.display_files(self.files)
 
         self.slice = Wav(files[0])
@@ -65,33 +70,34 @@ class Window:
         self.gui_setup()
 
 
-    def plot(self, display_spectral=False):
+    def plot(self):
         if self.fig is not None:
             self.fig.clf()
         # wav
 
-        if not display_spectral:
+        if not self.display_spectral:
             self.fig = plt.figure(1)
             self.wav_plot = plt.subplot(111)
             self.wav_plot.plot(self.slice.slice_samples)
             #self.wav_plot.set_ylabel('amplitude')
-            #self.wav_plot.axis('off')
+            self.wav_plot.axis('off')
             self.fig.set_facecolor('lightgray')
-            self.setTitle("Select 2 cutting points")
+            self.setTitle("")
         #spectrograph
         else:
             self.fig = plt.figure(1)
             self.wav_plot = plt.subplot(211)
             self.wav_plot.plot(self.slice.slice_samples)
-            self.wav_plot.set_ylabel('amplitude')
+            #self.wav_plot.set_ylabel('amplitude')
             self.wav_plot.axis('off')
             self.fig.set_facecolor('lightgray')
-            self.setTitle("Select 2 cutting points")
+            self.setTitle("")
  
             self.spec_plot = plt.subplot(212)
             self.spec_plot.specgram(self.slice.slice_samples, Fs=self.slice.file.getframerate(), NFFT=1024)
-            self.spec_plot.set_xlabel('time')
-            self.spec_plot.set_ylabel('frequency')
+            #self.spec_plot.set_xlabel('time')
+            #self.spec_plot.set_ylabel('frequency')
+            self.spec_plot.axis('off')
 
         if self.canvas:
             self.canvas.draw()
@@ -216,12 +222,16 @@ class Window:
     def on_click(self, event: Event):
         # left
         if event.button == 1 and type(event.xdata) is np.float64:
+            # ignore clicks on spectral plot
+            if self.display_spectral:
+                if (self.fig.get_size_inches()*self.fig.dpi)[1]/2 > event.y:
+                    return
             self.locators.append(int(event.xdata))
             if len(self.locators) > 2:
                 self.locators.pop(0)
                 self.fig.clf()
                 self.plot()
-            print(self.locators)
+            #print(self.locators)
             for x in self.locators:
                 self.wav_plot.axvline(x=x, color = 'r')
         # right
@@ -263,8 +273,14 @@ class Window:
 
     
     def on_write_slice_click(self):
-        print('writing slice')
-        path = slice_dir+"/"+"slice"
+        while True:
+            path = slice_dir+"/"+"slice_"+ str(self.slice_count) + ".wav"
+            if path in self.files:
+                print(path)
+                self.slice_count += 1
+            else:
+                break
+
 
         self.files.append(path)
         self.slice.write_slice(path)
@@ -273,4 +289,8 @@ class Window:
 
     def on_reset_click(self):
         self.slice.reset_buffer()
+        self.reset_plot()
+
+    def on_display_spectral(self):
+        self.display_spectral = not self.display_spectral
         self.reset_plot()
