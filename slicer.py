@@ -8,24 +8,21 @@ import os
 def main(argc, argv):
     files = []
 
-    dir_list = ['input']
+    dir_list = ['input', 'slice']
     dirs = {}
 
     wave_slices = []
 
-    #TODO: more robust argparsing
-    if argc == 1: # pipe support
-        while True:
-            try:
-                filename = input()
-            except EOFError:
-                break
-            if filename == "":
-                break
-            files.append(filename)
+    # default: read from 
+    if argc == 1:
+        for folder in dir_list:
+            for _, _, f in os.walk(folder):
+                dirs[folder] = f
+                for file in dirs[folder]:
+                    files.append(folder +'/'+ file)
 
     elif argc == 2 and (argv[1] == '-h' or argv[1] == '--help'): 
-        print("Usage: slicer.py [FILE]")
+        print("Usage: slicer.py  --  opens wav files in the input dir by default")
         exit(0)
 
     elif argv[1] == '-d': # directory
@@ -50,7 +47,6 @@ def main(argc, argv):
         files.append(argv[1])
     
     
-    gui = Window()
     bad_files = []
     for file in files:
         try:
@@ -69,9 +65,10 @@ def main(argc, argv):
                 wave_slices.append(slice)
 
     files = list(set(files).symmetric_difference(set(bad_files)))
-    gui.add_slice(wave_slices[0])
+
+    #TODO: create application state/ backend
+    gui = Window(files)
     gui.display_files(files)
-    gui.gui_setup()
     gui.run()
     
 

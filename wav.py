@@ -14,7 +14,6 @@ class Wav:
         self.slice_samples = [] # mutable file to be updated by repeat and speed_change
 
         self.play_object = None
-        self.slice_count = 0
         self.read()
 
     def read(self, num_samples: int = 0, offset: int = 0):
@@ -70,9 +69,8 @@ class Wav:
         print(len(self.slice_samples))
 
     def write_slice(self, out_name: str, start: int = 0, end: int = -1):
-        self.slice_count += 1
         end = len(self.slice_samples)
-        out = wave.open(out_name+"_"+str(self.slice_count)+".wav", 'wb')
+        out = wave.open(out_name+".wav", 'wb')
         out.setnchannels(1)
         out.setsampwidth(2)
         out.setframerate(44100.0)

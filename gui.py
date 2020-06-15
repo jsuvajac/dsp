@@ -16,7 +16,7 @@ from tkinter import ttk
 slice_dir = "slice"
 
 class Window:
-    def __init__(self):
+    def __init__(self, files):
         self.root = Tk()
         self.root.title("slicer")
         self.root.geometry('1080x750') 
@@ -33,6 +33,7 @@ class Window:
         self.bottom_frame = Frame(self.root, width=1200, height=100, padx=5, pady=5, bg='orange')
         self.bottom_frame.pack(side=TOP, fill=X)
  
+        # bottom tray
         self.bottom_tray = Frame(self.root, width=1200, height=100, padx=5, pady=5, bg='orange')
         self.bottom_tray.pack(side=BOTTOM, fill=BOTH)
                
@@ -50,31 +51,47 @@ class Window:
         button = ttk.Button(master=self.bottom_tray, text="Quit", command=self.root.quit)
         button.pack(side=LEFT, expand=1)
 
-      
         self.fig = None
         self.canvas = None
-        self.slice = None
+        self.tree = None
         self.locators = []
 
-    def add_slice(self, slice):
-        self.slice = slice
+        self.files = files
+        self.slice_count = 0
+        self.display_files(self.files)
 
-    def plot(self):
+        self.slice = Wav(files[0])
+
+        self.gui_setup()
+
+
+    def plot(self, display_spectral=False):
         if self.fig is not None:
             self.fig.clf()
         # wav
-        self.fig = plt.figure(1)
-        self.wav_plot = plt.subplot(111)
-        self.wav_plot.plot(self.slice.slice_samples)
-        self.wav_plot.set_ylabel('amplitude')
-        self.wav_plot.axis('off')
-        self.fig.set_facecolor('lightgray')
-        self.setTitle("Select 2 cutting points")
+
+        if not display_spectral:
+            self.fig = plt.figure(1)
+            self.wav_plot = plt.subplot(111)
+            self.wav_plot.plot(self.slice.slice_samples)
+            #self.wav_plot.set_ylabel('amplitude')
+            #self.wav_plot.axis('off')
+            self.fig.set_facecolor('lightgray')
+            self.setTitle("Select 2 cutting points")
         #spectrograph
-        #self.spec_plot = plt.subplot(212)
-        #self.spec_plot.specgram(self.slice.slice_samples, Fs=self.slice.file.getframerate(), NFFT=1024)
-        #self.spec_plot.set_xlabel('time')
-        #self.spec_plot.set_ylabel('frequency')
+        else:
+            self.fig = plt.figure(1)
+            self.wav_plot = plt.subplot(211)
+            self.wav_plot.plot(self.slice.slice_samples)
+            self.wav_plot.set_ylabel('amplitude')
+            self.wav_plot.axis('off')
+            self.fig.set_facecolor('lightgray')
+            self.setTitle("Select 2 cutting points")
+ 
+            self.spec_plot = plt.subplot(212)
+            self.spec_plot.specgram(self.slice.slice_samples, Fs=self.slice.file.getframerate(), NFFT=1024)
+            self.spec_plot.set_xlabel('time')
+            self.spec_plot.set_ylabel('frequency')
 
         if self.canvas:
             self.canvas.draw()
@@ -82,6 +99,7 @@ class Window:
    
     def gui_setup(self):
         self.plot()
+
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.plot_frame)
         self.canvas.mpl_connect('button_press_event', self.on_click)
         self.canvas.mpl_connect('key_press_event', self.on_key)
@@ -99,26 +117,42 @@ class Window:
         ttk.Label(self.widget_frame, text="-------------------------------------------").pack(side=TOP, expand=1)
 
         # speed
-        self.speed_slider = DoubleVar()
-        ttk.Label(self.widget_frame, text="speed").pack(side=TOP)
+        self.speed_slider = IntVar()
+        ttk.Label(self.widget_frame, text="speed up").pack(side=TOP)
         ttk.Label(self.widget_frame, textvariable=self.speed_slider).pack(side=TOP)
-        ttk.Scale(self.widget_frame, from_=-20, to_=20, length=300,  variable=self.speed_slider).pack(side=TOP)
+        ttk.Scale(self.widget_frame, from_=-10, to_=10, length=300, command=lambda s:self.speed_slider.set(int(float((s))))).pack(side=TOP)
 
         self.speed_button = ttk.Button(master=self.widget_frame, text="apply speed", command=self.on_speed_click)
         self.speed_button.pack(side=TOP)
 
-        # repeats
+
         ttk.Label(self.widget_frame, text="-------------------------------------------").pack(side=TOP, expand=1)
 
+        # slow
+        self.slow_slider = IntVar()
+        ttk.Label(self.widget_frame, text="slow down").pack(side=TOP)
+        ttk.Label(self.widget_frame, textvariable=self.slow_slider).pack(side=TOP)
+        ttk.Scale(self.widget_frame, from_=-10, to_=10, length=300, command=lambda s:self.slow_slider.set(int(float((s))))).pack(side=TOP)
+
+        self.slow_button = ttk.Button(master=self.widget_frame, text="apply slow", command=self.on_slow_click)
+        self.slow_button.pack(side=TOP)
+
+
+        ttk.Label(self.widget_frame, text="-------------------------------------------").pack(side=TOP, expand=1)
+
+        # repeats
         self.repeat_slider = IntVar()
         ttk.Label(self.widget_frame, text="repeats").pack(side=TOP)
         ttk.Label(self.widget_frame, textvariable=self.repeat_slider).pack(side=TOP)
-        ttk.Scale(self.widget_frame, from_=1, to_=10, length=300,  variable=self.repeat_slider).pack(side=TOP)
+        ttk.Scale(self.widget_frame, from_=-10, to_=10, length=300, command=lambda s:self.repeat_slider.set(int(float((s))))).pack(side=TOP)
 
         self.repeat_button = ttk.Button(master=self.widget_frame, text="apply repeats", command=self.on_repeat_click)
         self.repeat_button.pack(side=TOP)
 
+
         ttk.Label(self.widget_frame, text="-------------------------------------------").pack(side=TOP, expand=1)
+
+
 
         self.slice_button = ttk.Button(master=self.widget_frame, text="Slice", command=self.on_slice_click)
         self.slice_button.pack(side=TOP)
@@ -128,10 +162,9 @@ class Window:
         self.write_button = ttk.Button(master=self.widget_frame, text="Write to file", command=self.on_write_slice_click)
         self.write_button.pack(side=TOP)
 
-        ttk.Label(self.widget_frame, text="-------------------------------------------").pack(side=TOP)
 
 
-        ttk.Label(self.widget_frame, text="-------------------------------------------").pack(side=TOP, expand=1)
+        ttk.Label(self.widget_frame, text="===========================================").pack(side=TOP, expand=1)
 
 
         self.reset_button = ttk.Button(master=self.widget_frame, text="Reset Sample", command=self.on_reset_click)
@@ -141,11 +174,15 @@ class Window:
 
 
     def display_files(self,files):
-        self.tree = ttk.Treeview(self.file_frame)
-        self.tree.bind("<Double-1>", self.on_file_select)
-        self.tree.heading("#0",text="wav files",anchor=W)
-        self.tree.pack(side=LEFT, fill=BOTH, expand=1)
-
+        if not self.tree:
+            self.tree = ttk.Treeview(self.file_frame)
+            self.tree.bind("<Double-1>", self.on_file_select)
+            self.tree.heading("#0",text="wav files",anchor=W)
+            self.tree.pack(side=LEFT, fill=BOTH, expand=1)
+        # clean
+        for i in self.tree.get_children():
+            self.tree.delete(i)
+        # repopulate
         for f in files:
             self.tree.insert("", 0, text=f)
 
@@ -157,16 +194,18 @@ class Window:
         plt.suptitle(self.slice.path)
         plt.draw()
 
+
+# EVENTS
+
     def on_file_select(self, event: Event):
         item = self.tree.selection()[0]
         file_path = self.tree.item(item,"text")
         print("you clicked on", file_path)
-        self.add_slice(Wav(file_path))
+        self.slice = Wav(file_path)
         self.plot()
         self.canvas.draw()
         self.play_button['command'] = self.slice.play
         self.stop_button['command'] = self.slice.stop
-        #print(self.play_button['command'])
 
     def on_key(self, event: Event):
         key_press_handler(event, self.canvas)
@@ -175,8 +214,8 @@ class Window:
             self.root.quit()
 
     def on_click(self, event: Event):
-        #print(event)
-        if event.button == 1:
+        # left
+        if event.button == 1 and type(event.xdata) is np.float64:
             self.locators.append(int(event.xdata))
             if len(self.locators) > 2:
                 self.locators.pop(0)
@@ -185,8 +224,11 @@ class Window:
             print(self.locators)
             for x in self.locators:
                 self.wav_plot.axvline(x=x, color = 'r')
-        else:
+        # right
+        elif type(event.xdata) is np.float64:
+            self.locators.append(int(event.xdata))
             self.reset_plot()
+
         self.canvas.draw()
 
     def reset_plot(self):
@@ -208,6 +250,13 @@ class Window:
         self.slice.apply_speed_change(self.speed_slider.get())
         self.reset_plot()
 
+    def on_slow_click(self):
+        factor = self.slow_slider.get()
+        print(factor)
+        self.slice.apply_speed_change(1/factor)
+        self.reset_plot()
+
+
     def on_repeat_click(self):
         self.slice.apply_repeat(self.repeat_slider.get())
         self.reset_plot()
@@ -215,7 +264,12 @@ class Window:
     
     def on_write_slice_click(self):
         print('writing slice')
-        self.slice.write_slice(slice_dir+"/"+"slice")
+        path = slice_dir+"/"+"slice"
+
+        self.files.append(path)
+        self.slice.write_slice(path)
+
+        self.display_files(self.files)
 
     def on_reset_click(self):
         self.slice.reset_buffer()
