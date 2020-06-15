@@ -23,29 +23,38 @@ class Window:
         self.root.config(bg='lightgray')
         self.root.protocol("WM_DELETE_WINDOW", self.root.quit)
 
+        # Style
+        #('winnative', 'clam', 'alt', 'default', 'classic', 'vista', 'xpnative')
+        self.style = ttk.Style()
+        self.style.theme_use(self.style.theme_names()[-1])
+        #print(ttk.Style().lookup("TFrame", "background"))
+        self.style.configure('.',background="#AAAAAA")
+        #self.style.configure('.',foreground="#111100")
+        self.style.configure('TButton',background="#CCCCCC")
+    
         # horizontal bars
-        self.top_frame = Frame(self.root, width=1200, height=30, padx=5, pady=5, bg='orange')
+        self.top_frame = Frame(self.root, width=1200, height=20, padx=5, pady=5, bg='orange')
         self.top_frame.pack(side=TOP, fill=X)
  
         self.middle_frame = Frame(self.root, width=1200, height=200, padx=5, pady=5, bg='darkorange')
         self.middle_frame.pack(side=TOP, fill=BOTH)
 
-        self.bottom_frame = Frame(self.root, width=1200, height=100, padx=5, pady=5, bg='orange')
+        self.bottom_frame = Frame(self.root, width=1200, height=20, padx=5, pady=5, bg='orange')
         self.bottom_frame.pack(side=TOP, fill=X)
  
         # bottom tray
         self.bottom_tray = Frame(self.root, width=1200, height=100, padx=5, pady=5, bg='orange')
         self.bottom_tray.pack(side=BOTTOM, fill=BOTH)
-               
-        # vertical bars in the middle
-        self.file_frame = ttk.Frame(self.middle_frame, width=500, height=800)
-        self.file_frame.pack(side=LEFT, fill=BOTH)
 
-        self.plot_frame = ttk.Frame(self.middle_frame, width=500, height=400)
+        # vertical bars in the middle
+        self.file_frame = ttk.Frame(self.middle_frame, width=50, height=400)
+        self.file_frame.pack(side=LEFT, fill=Y)
+
+        self.plot_frame = ttk.Frame(self.middle_frame, width=300, height=400)
         self.plot_frame.pack(side=LEFT, fill=BOTH, expand=1)
 
-        self.widget_frame = ttk.Frame(self.middle_frame, width=500, height=400)
-        self.widget_frame.pack(side=LEFT, fill=BOTH)
+        self.widget_frame = ttk.Frame(self.middle_frame, width=50, height=400)
+        self.widget_frame.pack(side=LEFT, fill=Y)
 
         # quit btn
         button = ttk.Button(master=self.bottom_tray, text="Quit", command=self.root.quit)
@@ -110,90 +119,97 @@ class Window:
         self.canvas.mpl_connect('button_press_event', self.on_click)
         self.canvas.mpl_connect('key_press_event', self.on_key)
         self.canvas.draw()
-        #self.plot_toolbar = NavigationToolbar2Tk(self.canvas, self.plot_frame).pack(side=TOP, fill=X)
+        #self.plot_toolbar = NavigationToolbar2Tk(self.canvas, self.plot_frame).pack(side=side, fill=X)
         self.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
         #self.plot_toolbar.update()
 
-        # Widget pannel
-        ttk.Label(self.widget_frame, text="").pack(side=TOP, expand=1)
+        self.widget_panel_setup(self.widget_frame, TOP)
 
-        self.play_button = ttk.Button(master=self.widget_frame, text="Play", command=self.slice.play)
+    def widget_panel_setup(self, master, side):
+        ttk.Label(master, text="").pack(side=side, expand=1)
+
+        self.play_button = ttk.Button(master=master, text="Play", command=self.slice.play)
         self.play_button.pack(side=TOP)
-        self.stop_button = ttk.Button(master=self.widget_frame, text="Stop", command=self.slice.stop)
+
+
+        self.stop_button = ttk.Button(master=master, text="Stop", command=self.slice.stop)
         self.stop_button.pack(side=TOP)
 
-        self.display_horizontal_separator(self.widget_frame)
+        self.display_horizontal_separator(master, side)
 
         # speed
         self.speed_slider = IntVar()
-        ttk.Label(self.widget_frame, text="speed up").pack(side=TOP)
-        ttk.Label(self.widget_frame, textvariable=self.speed_slider).pack(side=TOP)
-        ttk.Scale(self.widget_frame, from_=-10, to_=10, length=300, command=lambda s:self.speed_slider.set(int(float((s))))).pack(side=TOP)
+        ttk.Label(master, text="speed up").pack(side=side)
+        ttk.Label(master, textvariable=self.speed_slider).pack(side=side)
+        ttk.Scale(master, from_=-10, to_=10, length=300, command=lambda s:self.speed_slider.set(int(float((s))))).pack(side=side)
 
-        self.speed_button = ttk.Button(master=self.widget_frame, text="apply speed", command=self.on_speed_click)
+        self.speed_button = ttk.Button(master=master, text="apply speed", command=self.on_speed_click)
         self.speed_button.pack(side=TOP)
 
 
-        self.display_horizontal_separator(self.widget_frame)
+        self.display_horizontal_separator(master, side)
 
 
         # slow
         self.slow_slider = IntVar()
-        ttk.Label(self.widget_frame, text="slow down").pack(side=TOP)
-        ttk.Label(self.widget_frame, textvariable=self.slow_slider).pack(side=TOP)
-        ttk.Scale(self.widget_frame, from_=-10, to_=10, length=300, command=lambda s:self.slow_slider.set(int(float((s))))).pack(side=TOP)
+        ttk.Label(master, text="slow down").pack(side=side)
+        ttk.Label(master, textvariable=self.slow_slider).pack(side=side)
+        ttk.Scale(master, from_=-10, to_=10, length=300, command=lambda s:self.slow_slider.set(int(float((s))))).pack(side=side)
 
-        self.slow_button = ttk.Button(master=self.widget_frame, text="apply slow", command=self.on_slow_click)
+        self.slow_button = ttk.Button(master=master, text="apply slow", command=self.on_slow_click)
         self.slow_button.pack(side=TOP)
 
 
-        self.display_horizontal_separator(self.widget_frame)
+        self.display_horizontal_separator(master, side)
 
 
         # repeats
         self.repeat_slider = IntVar()
-        ttk.Label(self.widget_frame, text="repeats").pack(side=TOP)
-        ttk.Label(self.widget_frame, textvariable=self.repeat_slider).pack(side=TOP)
-        ttk.Scale(self.widget_frame, from_=-10, to_=10, length=300, command=lambda s:self.repeat_slider.set(int(float((s))))).pack(side=TOP)
+        ttk.Label(master, text="repeats").pack(side=side)
+        ttk.Label(master, textvariable=self.repeat_slider).pack(side=side)
+        ttk.Scale(master, from_=-10, to_=10, length=300, command=lambda s:self.repeat_slider.set(int(float((s))))).pack(side=side)
 
-        self.repeat_button = ttk.Button(master=self.widget_frame, text="apply repeats", command=self.on_repeat_click)
+        self.repeat_button = ttk.Button(master=master, text="apply repeats", command=self.on_repeat_click)
         self.repeat_button.pack(side=TOP)
 
 
-        self.display_horizontal_separator(self.widget_frame)
+        self.display_horizontal_separator(master, side)
 
 
-        self.slice_button = ttk.Button(master=self.widget_frame, text="Slice", command=self.on_slice_click)
+        self.slice_button = ttk.Button(master=master, text="Slice", command=self.on_slice_click)
         self.slice_button.pack(side=TOP)
 
 
-        self.display_horizontal_separator(self.widget_frame)
 
-        self.write_button = ttk.Button(master=self.widget_frame, text="Write to file", command=self.on_write_slice_click)
-        self.write_button.pack(side=TOP)
+        self.display_horizontal_separator(master, side)
 
 
-
-        self.display_horizontal_separator(self.widget_frame)
-
-
-        self.reset_button = ttk.Button(master=self.widget_frame, text="Reset Sample", command=self.on_reset_click)
+        self.reset_button = ttk.Button(master=master, text="Reset Sample", command=self.on_reset_click)
         self.reset_button.pack(side=TOP)
 
-        ttk.Label(self.widget_frame, text="").pack(side=TOP, expand=1)
+        ttk.Label(master, text="").pack(side=side, expand=1)
 
-    def display_horizontal_separator(self, master, empty=False):
-        ttk.Label(master, text="").pack(side=TOP, expand=1)
+    def display_horizontal_separator(self, master, side, empty=False, expand=True):
+        ttk.Label(master, text="").pack(side=side, expand=1)
         if not empty:
-            ttk.Separator(master, orient=HORIZONTAL).pack(side=TOP, fill=BOTH, expand=1)
-        ttk.Label(master, text="").pack(side=TOP, expand=1)
+            ttk.Separator(master, orient=HORIZONTAL).pack(side=side, fill=BOTH, expand=expand)
+            ttk.Label(master, text="").pack(side=side, expand=1)
 
     def display_files(self,files):
         if not self.tree:
             self.tree = ttk.Treeview(self.file_frame)
             self.tree.bind("<Double-1>", self.on_file_select)
             self.tree.heading("#0",text="wav files",anchor=W)
-            self.tree.pack(side=LEFT, fill=BOTH, expand=1)
+            self.tree.pack(side=TOP, fill=BOTH, expand=1)
+
+            self.display_horizontal_separator(self.file_frame, TOP, expand=False)
+
+            self.write_button = ttk.Button(master=self.file_frame, text="Write to file", command=self.on_write_slice_click)
+            self.write_button.pack(side=TOP)
+
+            self.display_horizontal_separator(self.file_frame, TOP, empty=True)
+
+
         # clean
         for i in self.tree.get_children():
             self.tree.delete(i)
@@ -201,12 +217,14 @@ class Window:
         for f in files:
             self.tree.insert("", 0, text=f)
 
+     
+
     def run(self):
         self.root.mainloop()
 
     def setTitle(self, s: str):
-        self.wav_plot.set_title(s, fontsize=16)
-        plt.suptitle(self.slice.path)
+        self.wav_plot.set_title(self.slice.path, fontsize=16)
+        plt.suptitle(s)
         plt.draw()
 
 
