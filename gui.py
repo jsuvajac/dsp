@@ -19,7 +19,7 @@ class Window:
     def __init__(self, files):
         self.root = Tk()
         self.root.title("slicer")
-        self.root.geometry('1080x750') 
+        self.root.geometry('1920x1080') 
         self.root.config(bg='lightgray')
         self.root.protocol("WM_DELETE_WINDOW", self.root.quit)
 
@@ -135,7 +135,7 @@ class Window:
         self.stop_button = ttk.Button(master=master, text="Stop", command=self.slice.stop)
         self.stop_button.pack(side=TOP)
 
-        self.display_horizontal_separator(master, side)
+        self.display_separator(master, side)
 
         # speed
         self.speed_slider = IntVar()
@@ -147,7 +147,7 @@ class Window:
         self.speed_button.pack(side=TOP)
 
 
-        self.display_horizontal_separator(master, side)
+        self.display_separator(master, side)
 
 
         # slow
@@ -160,7 +160,7 @@ class Window:
         self.slow_button.pack(side=TOP)
 
 
-        self.display_horizontal_separator(master, side)
+        self.display_separator(master, side)
 
 
         # repeats
@@ -173,7 +173,7 @@ class Window:
         self.repeat_button.pack(side=TOP)
 
 
-        self.display_horizontal_separator(master, side)
+        self.display_separator(master, side)
 
 
         self.slice_button = ttk.Button(master=master, text="Slice", command=self.on_slice_click)
@@ -181,7 +181,7 @@ class Window:
 
 
 
-        self.display_horizontal_separator(master, side)
+        self.display_separator(master, side)
 
 
         self.reset_button = ttk.Button(master=master, text="Reset Sample", command=self.on_reset_click)
@@ -189,10 +189,10 @@ class Window:
 
         ttk.Label(master, text="").pack(side=side, expand=1)
 
-    def display_horizontal_separator(self, master, side, empty=False, expand=True):
+    def display_separator(self, master, side, empty=False, expand=True, orient=HORIZONTAL):
         ttk.Label(master, text="").pack(side=side, expand=1)
         if not empty:
-            ttk.Separator(master, orient=HORIZONTAL).pack(side=side, fill=BOTH, expand=expand)
+            ttk.Separator(master, orient=orient).pack(side=side, fill=BOTH, expand=expand)
             ttk.Label(master, text="").pack(side=side, expand=1)
 
     def display_files(self,files):
@@ -202,12 +202,12 @@ class Window:
             self.tree.heading("#0",text="wav files",anchor=W)
             self.tree.pack(side=TOP, fill=BOTH, expand=1)
 
-            self.display_horizontal_separator(self.file_frame, TOP, expand=False)
+            self.display_separator(self.file_frame, TOP, expand=False)
 
             self.write_button = ttk.Button(master=self.file_frame, text="Write to file", command=self.on_write_slice_click)
             self.write_button.pack(side=TOP)
 
-            self.display_horizontal_separator(self.file_frame, TOP, empty=True)
+            self.display_separator(self.file_frame, TOP, empty=True)
 
 
         # clean
@@ -260,7 +260,7 @@ class Window:
                 self.plot()
             #print(self.locators)
             for x in self.locators:
-                self.wav_plot.axvline(x=x, color = 'r')
+                self.wav_plot.axvline(x=x, color = 'darkorange')
         # right
         elif type(event.xdata) is np.float64:
             self.locators.append(int(event.xdata))

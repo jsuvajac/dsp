@@ -40,9 +40,6 @@ def main(argc, argv):
 
         #print(dirs)
 
-    elif argc == 2 and argv[1] == '-t': # testing
-        files.append('input/piano.wav')
-
     elif argc == 2: # single file
         files.append(argv[1])
     
