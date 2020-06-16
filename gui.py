@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from wav import *
+import config as cfg
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import (
@@ -13,14 +14,13 @@ import numpy as np
 from tkinter import *
 from tkinter import ttk
 
-slice_dir = "slice"
 
 class Window:
     def __init__(self, files):
         self.root = Tk()
-        self.root.title("slicer")
-        self.root.geometry('1920x1080') 
-        self.root.config(bg='lightgray')
+        self.root.title(cfg.title)
+        self.root.geometry(cfg.resolution) 
+        self.root.config(bg=cfg.col_bg)
         self.root.protocol("WM_DELETE_WINDOW", self.root.quit)
 
         # Style
@@ -28,22 +28,22 @@ class Window:
         self.style = ttk.Style()
         self.style.theme_use(self.style.theme_names()[-1])
         #print(ttk.Style().lookup("TFrame", "background"))
-        self.style.configure('.',background="#AAAAAA")
+        self.style.configure('.',background=cfg.col_ttk_bg)
         #self.style.configure('.',foreground="#111100")
-        self.style.configure('TButton',background="#CCCCCC")
+        self.style.configure('TButton',background=cfg.col_ttk_tbutton_bg)
     
         # horizontal bars
-        self.top_frame = Frame(self.root, width=1200, height=20, padx=5, pady=5, bg='orange')
+        self.top_frame = Frame(self.root, width=1200, height=20, padx=5, pady=5, bg=cfg.col_accent_1)
         self.top_frame.pack(side=TOP, fill=X)
  
-        self.middle_frame = Frame(self.root, width=1200, height=200, padx=5, pady=5, bg='darkorange')
+        self.middle_frame = Frame(self.root, width=1200, height=200, padx=5, pady=5, bg=cfg.col_accent_2)
         self.middle_frame.pack(side=TOP, fill=BOTH)
 
-        self.bottom_frame = Frame(self.root, width=1200, height=20, padx=5, pady=5, bg='orange')
+        self.bottom_frame = Frame(self.root, width=1200, height=20, padx=5, pady=5, bg=cfg.col_accent_1)
         self.bottom_frame.pack(side=TOP, fill=X)
  
         # bottom tray
-        self.bottom_tray = Frame(self.root, width=1200, height=100, padx=5, pady=5, bg='orange')
+        self.bottom_tray = Frame(self.root, width=1200, height=100, padx=5, pady=5, bg=cfg.col_accent_1)
         self.bottom_tray.pack(side=BOTTOM, fill=BOTH)
 
         # vertical bars in the middle
@@ -51,17 +51,17 @@ class Window:
         self.file_frame.pack(side=LEFT, fill=Y)
 
         self.plot_frame = ttk.Frame(self.middle_frame, width=300, height=400)
-        self.plot_frame.pack(side=LEFT, fill=BOTH, expand=1)
+        self.plot_frame.pack(side=LEFT, fill=BOTH, expand=True)
 
         self.widget_frame = ttk.Frame(self.middle_frame, width=50, height=400)
         self.widget_frame.pack(side=LEFT, fill=Y)
 
         # quit btn
         button = ttk.Button(master=self.bottom_tray, text="Quit", command=self.root.quit)
-        button.pack(side=LEFT, expand=1)
+        button.pack(side=LEFT, expand=True)
 
         button = ttk.Button(master=self.bottom_tray, text="Spectral Plot", command=self.on_display_spectral)
-        button.pack(side=LEFT, expand=1)
+        button.pack(side=LEFT, expand=True)
 
         self.display_spectral = False
 
@@ -69,6 +69,8 @@ class Window:
         self.canvas = None
         self.tree = None
         self.locators = []
+
+        self.sample_buttons = []
 
         self.files = files
         self.slice_count = 1
@@ -90,7 +92,7 @@ class Window:
             self.wav_plot.plot(self.slice.slice_samples)
             #self.wav_plot.set_ylabel('amplitude')
             self.wav_plot.axis('off')
-            self.fig.set_facecolor('lightgray')
+            self.fig.set_facecolor(cfg.col_bg)
             self.setTitle("")
         #spectrograph
         else:
@@ -99,7 +101,7 @@ class Window:
             self.wav_plot.plot(self.slice.slice_samples)
             #self.wav_plot.set_ylabel('amplitude')
             self.wav_plot.axis('off')
-            self.fig.set_facecolor('lightgray')
+            self.fig.set_facecolor(cfg.col_bg)
             self.setTitle("")
  
             self.spec_plot = plt.subplot(212)
@@ -120,13 +122,13 @@ class Window:
         self.canvas.mpl_connect('key_press_event', self.on_key)
         self.canvas.draw()
         #self.plot_toolbar = NavigationToolbar2Tk(self.canvas, self.plot_frame).pack(side=side, fill=X)
-        self.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
+        self.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=True)
         #self.plot_toolbar.update()
 
         self.widget_panel_setup(self.widget_frame, TOP)
 
     def widget_panel_setup(self, master, side):
-        ttk.Label(master, text="").pack(side=side, expand=1)
+        ttk.Label(master, text="").pack(side=side, expand=True)
 
         self.play_button = ttk.Button(master=master, text="Play", command=self.slice.play)
         self.play_button.pack(side=TOP)
@@ -143,7 +145,7 @@ class Window:
         ttk.Label(master, textvariable=self.speed_slider).pack(side=side)
         ttk.Scale(master, from_=-10, to_=10, length=300, command=lambda s:self.speed_slider.set(int(float((s))))).pack(side=side)
 
-        self.speed_button = ttk.Button(master=master, text="apply speed", command=self.on_speed_click)
+        self.speed_button = ttk.Button(master=master, text="speed up", command=self.on_speed_click)
         self.speed_button.pack(side=TOP)
 
 
@@ -156,7 +158,7 @@ class Window:
         ttk.Label(master, textvariable=self.slow_slider).pack(side=side)
         ttk.Scale(master, from_=-10, to_=10, length=300, command=lambda s:self.slow_slider.set(int(float((s))))).pack(side=side)
 
-        self.slow_button = ttk.Button(master=master, text="apply slow", command=self.on_slow_click)
+        self.slow_button = ttk.Button(master=master, text="slow down", command=self.on_slow_click)
         self.slow_button.pack(side=TOP)
 
 
@@ -169,7 +171,7 @@ class Window:
         ttk.Label(master, textvariable=self.repeat_slider).pack(side=side)
         ttk.Scale(master, from_=-10, to_=10, length=300, command=lambda s:self.repeat_slider.set(int(float((s))))).pack(side=side)
 
-        self.repeat_button = ttk.Button(master=master, text="apply repeats", command=self.on_repeat_click)
+        self.repeat_button = ttk.Button(master=master, text="repeat", command=self.on_repeat_click)
         self.repeat_button.pack(side=TOP)
 
 
@@ -184,23 +186,23 @@ class Window:
         self.display_separator(master, side)
 
 
-        self.reset_button = ttk.Button(master=master, text="Reset Sample", command=self.on_reset_click)
+        self.reset_button = ttk.Button(master=master, text="Reset", command=self.slice.reset_buffer)
         self.reset_button.pack(side=TOP)
 
-        ttk.Label(master, text="").pack(side=side, expand=1)
+        ttk.Label(master, text="").pack(side=side, expand=True)
 
     def display_separator(self, master, side, empty=False, expand=True, orient=HORIZONTAL):
-        ttk.Label(master, text="").pack(side=side, expand=1)
+        ttk.Label(master, text="").pack(side=side, expand=True)
         if not empty:
             ttk.Separator(master, orient=orient).pack(side=side, fill=BOTH, expand=expand)
-            ttk.Label(master, text="").pack(side=side, expand=1)
+            ttk.Label(master, text="").pack(side=side, expand=True)
 
     def display_files(self,files):
         if not self.tree:
             self.tree = ttk.Treeview(self.file_frame)
             self.tree.bind("<Double-1>", self.on_file_select)
             self.tree.heading("#0",text="wav files",anchor=W)
-            self.tree.pack(side=TOP, fill=BOTH, expand=1)
+            self.tree.pack(side=TOP, fill=BOTH, expand=True)
 
             self.display_separator(self.file_frame, TOP, expand=False)
 
@@ -229,6 +231,7 @@ class Window:
 
 
 # EVENTS
+# TODO: separate events from gui
 
     def on_file_select(self, event: Event):
         item = self.tree.selection()[0]
@@ -260,7 +263,7 @@ class Window:
                 self.plot()
             #print(self.locators)
             for x in self.locators:
-                self.wav_plot.axvline(x=x, color = 'darkorange')
+                self.wav_plot.axvline(x=x, color = cfg.col_accent_2)
         # right
         elif type(event.xdata) is np.float64:
             self.locators.append(int(event.xdata))
@@ -298,10 +301,10 @@ class Window:
         self.slice.apply_repeat(self.repeat_slider.get())
         self.reset_plot()
 
-    
+
     def on_write_slice_click(self):
         while True:
-            path = slice_dir+"/"+"slice_"+ str(self.slice_count) + ".wav"
+            path = cfg.dir_slice+"/"+"slice_"+ str(self.slice_count) + ".wav"
             if path in self.files:
                 print(path)
                 self.slice_count += 1
@@ -313,10 +316,9 @@ class Window:
         self.slice.write_slice(path)
 
         self.display_files(self.files)
-
-    def on_reset_click(self):
-        self.slice.reset_buffer()
-        self.reset_plot()
+        #TODO: implement buttom
+        #self.sample_buttons.append(ttk.Frame(self.bottom_frame, width=150, height=150).pack(side=LEFT))
+        #ttk.Button(master=sel.sample_buttons[0], text="play", command=self.slice.play).pack(side=LEFT)
 
     def on_display_spectral(self):
         self.display_spectral = not self.display_spectral
