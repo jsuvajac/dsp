@@ -4,6 +4,14 @@ import simpleaudio as sa # TODO: replace with pyaudio
 import numpy as np
 import wave
 import struct
+class ReadHead:
+    def __init__(self, wav):
+        self.wav = wav
+        self.index = 0
+    def readframes(self, size):
+        chunk = self.wav.slice_samples[self.index:self.index + size]
+        self.index += size
+        return np.array(chunk)
 
 class Wav:
     def __init__(self, file: str):
