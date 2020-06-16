@@ -139,11 +139,17 @@ class Window:
 
         self.display_separator(master, side)
 
+        self.reverse_button = ttk.Button(master=master, text="Reverse", command=self.on_reverse_click)
+        self.reverse_button.pack(side=TOP)
+
+        self.display_separator(master, side)
+
+
         # speed
         self.speed_slider = IntVar()
-        ttk.Label(master, text="speed up").pack(side=side)
         ttk.Label(master, textvariable=self.speed_slider).pack(side=side)
-        ttk.Scale(master, from_=-10, to_=10, length=300, command=lambda s:self.speed_slider.set(int(float((s))))).pack(side=side)
+        ttk.Scale(master, from_=2, to_=10, length=300, command=lambda s:self.speed_slider.set(int(float((s))))).pack(side=side)
+        self.speed_slider.set(2)
 
         self.speed_button = ttk.Button(master=master, text="speed up", command=self.on_speed_click)
         self.speed_button.pack(side=TOP)
@@ -154,9 +160,9 @@ class Window:
 
         # slow
         self.slow_slider = IntVar()
-        ttk.Label(master, text="slow down").pack(side=side)
         ttk.Label(master, textvariable=self.slow_slider).pack(side=side)
-        ttk.Scale(master, from_=-10, to_=10, length=300, command=lambda s:self.slow_slider.set(int(float((s))))).pack(side=side)
+        ttk.Scale(master, from_=2, to_=10, length=300, command=lambda s:self.slow_slider.set(int(float((s))))).pack(side=side)
+        self.slow_slider.set(2)
 
         self.slow_button = ttk.Button(master=master, text="slow down", command=self.on_slow_click)
         self.slow_button.pack(side=TOP)
@@ -167,9 +173,9 @@ class Window:
 
         # repeats
         self.repeat_slider = IntVar()
-        ttk.Label(master, text="repeats").pack(side=side)
         ttk.Label(master, textvariable=self.repeat_slider).pack(side=side)
-        ttk.Scale(master, from_=-10, to_=10, length=300, command=lambda s:self.repeat_slider.set(int(float((s))))).pack(side=side)
+        ttk.Scale(master, from_=2, to_=10, length=300, command=lambda s:self.repeat_slider.set(int(float((s))))).pack(side=side)
+        self.repeat_slider.set(2)
 
         self.repeat_button = ttk.Button(master=master, text="repeat", command=self.on_repeat_click)
         self.repeat_button.pack(side=TOP)
@@ -296,6 +302,9 @@ class Window:
         self.slice.apply_speed_change(1/factor)
         self.reset_plot()
 
+    def on_reverse_click(self):
+        self.slice.apply_speed_change(-1)
+        self.reset_plot()
 
     def on_repeat_click(self):
         self.slice.apply_repeat(self.repeat_slider.get())
