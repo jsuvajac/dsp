@@ -329,8 +329,11 @@ class Window:
                 self.slice_count += 1
             else:
                 break
+        
         self.slice.write_slice(path)
         self.insert_wave(path)
+
+        self.slice.reset_buffer()
 
         self.display_files(self.get_wave_list())
 
@@ -352,27 +355,11 @@ class Window:
         ttk.Button(master=self.sample_buttons[-1], text=path, command=lambda: self.get_wave(path).play()).pack(side=TOP)
         ttk.Separator(self.bottom_frame, orient=VERTICAL).pack(side=LEFT, fill=Y)
 
-
     def on_display_spectral(self):
         self.display_spectral = not self.display_spectral
         self.reset_plot()
 
-# 
-#    def on_play_pattern(self):
-#        import threading
-#        t = threading.Thread(target=self.play_ntimes, args=([1,0,1,1,0,1,1,1,0],))
-#        t.start()
-#
-#
-#    def play_ntimes(self, arr):
-#        import time
-#        for y in range(3):
-#            for x in arr:
-#                time.sleep(.1)
-#                if x == 1:
-#                    self.slice.play()
-#
-
+    #TODO: fix multiple plots
     def on_display_polar(self):
         #self.plot()
         #self.fig2.clf()
