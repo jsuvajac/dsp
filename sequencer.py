@@ -62,7 +62,7 @@ class Sequencer:
     def on_play_pattern(self, sequence):
         t = threading.Thread(target=self.play_ntimes, args=(self.sequence, ), daemon=True)
         t.start()
-
+    # TODO: fix timing
     def play(self, seq):
         index = 0
         while self.run:
@@ -71,17 +71,22 @@ class Sequencer:
                     pat.wav.play()
                 index += 1
                 index %= self.num_steps
-            time.sleep(self.step_size/2)
+                print(index)
+            time.sleep(self.step_size)
 
 if __name__=="__main__":
-    pat1 = Pattern(Wav("slice/slice_1.wav"), 5)
-    pat1.pattern = [0,0,1,0,1]
-    pat2 = Pattern(Wav("slice/slice_2.wav"), 3)
-    pat3 = Pattern(Wav("slice/slice_3.wav"), 4)
-    pat3.pattern = [0,1,0,1]
+    pat1 = Pattern(Wav("slice/slice_1.wav"), 2)
+    #pat1.pattern = [0,0,1,0,1]
+
+    pat2 = Pattern(Wav("slice/slice_1.wav"), 3)
+
+    #pat3 = Pattern(Wav("slice/slice_3.wav"), 6)
+    #pat3.pattern = [1,0,1,0,1,0]
 
     seq = Sequencer()
     seq.add_pattern(pat1)
     seq.add_pattern(pat2)
-    seq.add_pattern(pat3)
+    #seq.add_pattern(pat3)
+
+    seq.step_size = 0.5
     seq.play(seq.sequence)
