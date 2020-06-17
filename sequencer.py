@@ -62,17 +62,36 @@ class Sequencer:
     def on_play_pattern(self, sequence):
         t = threading.Thread(target=self.play_ntimes, args=(self.sequence, ), daemon=True)
         t.start()
-    # TODO: fix timing
+
     def play(self, seq):
         index = 0
         while self.run:
+            start = time.time()
             for i, pat in enumerate(seq):
                 if pat.pattern[index] == 1:
                     pat.wav.play()
-                index += 1
-                index %= self.num_steps
-                print(index)
-            time.sleep(self.step_size)
+
+            if index == 0:
+                print()
+
+            #print(index, end='')
+            index += 1
+            index %= self.num_steps
+
+            #print(f" step: {self.step_size:.4f}", end='')
+
+            end = time.time()
+
+            delta = self.step_size -(end-start )
+            if delta < 0:
+                delta = 0
+            #print(f" af-op: {delta:.4f}", end='')
+        
+            #print(f" sleep: {self.step_size+delta:.4f}", end='')
+            time.sleep(self.step_size + delta)
+
+            end = time.time()
+            #print(f" del: {end-start:.4f}")
 
 if __name__=="__main__":
     pat1 = Pattern(Wav("slice/slice_1.wav"), 2)
@@ -86,7 +105,10 @@ if __name__=="__main__":
     seq = Sequencer()
     seq.add_pattern(pat1)
     seq.add_pattern(pat2)
+    seq.step_size = 0.25
     #seq.add_pattern(pat3)
 
-    seq.step_size = 0.5
-    seq.play(seq.sequence)
+    try:
+        seq.play(seq.sequence)
+    except KeyboardInterrupt:
+        seq.stop_sequencer()
