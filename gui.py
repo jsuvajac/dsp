@@ -14,6 +14,10 @@ import numpy as np
 from tkinter import *
 from tkinter import ttk
 
+# TODO: fix multiple plots
+# TODO: separate events from gui
+# TODO: create sequencer gui
+
 
 class Window:
     def __init__(self, get_wave_list_func, get_wave_func, insert_wave_func):
@@ -247,7 +251,6 @@ class Window:
 
 
 # EVENTS
-# TODO: separate events from gui
 
     def on_file_select(self, event: Event):
         item = self.tree.selection()[0]
@@ -359,7 +362,6 @@ class Window:
         self.display_spectral = not self.display_spectral
         self.reset_plot()
 
-    #TODO: fix multiple plots
     def on_display_polar(self):
         #self.plot()
         #self.fig2.clf()

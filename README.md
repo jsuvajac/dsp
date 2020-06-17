@@ -1,5 +1,5 @@
 # Slicer
-Simple wave file slicer and sampler
+A sound exploration project
 
 ### Run
 ```
@@ -10,17 +10,22 @@ python3 slicer.py -d
 ### Test
 ```
 python3 wav.py
+python3 sequencer.py
 ```
 
 ## Gui
-* load in wave files
 * plot amplitude and spectral graphs
-* select file from file list
-* play/stop
+* apply sample modifying features
+* write new slice to file
 
-## Wav
+## Euclidian Sequencer
+* Play n polyrhitmic sequences
+* As the patterns are added the sequencer calculates the minimal number of subdivisions needed to represent all patterns
+
+## Wav/Slice
 * Read in a wav file into a non mutable buffer 'samples'
 * Apply changes to the buffer
+* Play slice
 * Save the newly formed slice as a new wav file
 
 ### Sample modifying features
@@ -29,4 +34,4 @@ python3 wav.py
     speed up
     slow down
     repeat
-    reset to original
+    reset sample original

@@ -5,6 +5,9 @@ import numpy as np
 import wave
 import struct
 
+# TODO: fade-in/ fade-out
+# TODO: filters
+
 class ReadHead:
     def __init__(self, wav):
         self.wav = wav
@@ -22,7 +25,7 @@ class Wav:
         self.samples = [] # non mutable buffer read from file
         self.slice_samples = [] # mutable file to be updated by repeat and speed_change
 
-        self.play_object = None
+        self.play_object = None # simpleaudio's buffer player
         self.read()
 
     def read(self, num_samples: int = 0, offset: int = 0):

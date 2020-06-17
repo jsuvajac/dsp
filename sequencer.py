@@ -4,6 +4,7 @@ from math import gcd
 
 from wav import *
 
+# TODO: replace simple audio with pyaudio for better performance and concurrent sample playback
 
 class Pattern:
     def __init__(self, wav, num_steps):
@@ -15,9 +16,10 @@ class Pattern:
         self.length = len(self.wav.samples)/44100.0 * num_steps
         #print(self.pattern, self.length, self.num_steps)
 
+    # insert padding after each beat 
     def lengthen(self, factor):
         #print(self.pattern, factor)
-
+        
         temp = []
         for i in self.pattern:
             temp.append(i)
@@ -27,7 +29,7 @@ class Pattern:
         self.num_steps = len(temp)
 
 
-
+# polyrhythmicr sequencer
 class Sequencer:
     def __init__(self):
         self.run = True
@@ -35,11 +37,19 @@ class Sequencer:
         self.sequence = [] # of patterns
         self.num_steps = 0
         self.step_size = 0
-
+    
     def stop_sequencer(self):
         self.run = False
 
     def add_pattern(self, pattern):
+        """
+        if the sequencer contains a patter of 3 and a pattern of 4 beats is added:
+            -> the sequencer will have 12 beats as that is the smalles length with factors 3 and 4
+
+        if we add a pattern of 2 the sequence will not change as 2 is a factor of 12
+
+        if we add a pattern of 9 the sequence will be 36 since that is the shortest sequence with factors 12 and 9
+        """
         if self.sequence == []:
             self.step_size = pattern.length/pattern.num_steps
             self.num_steps = pattern.num_steps
@@ -50,6 +60,7 @@ class Sequencer:
             return
 
         else:
+           
             gcd_val = gcd(self.num_steps,pattern.num_steps)
 
             #print(self.num_steps, pattern.num_steps)
@@ -62,7 +73,6 @@ class Sequencer:
 
             self.num_steps = temp_num_steps
             self.sequence.append(pattern)
-
 
 
     def on_play_pattern(self):
@@ -80,7 +90,6 @@ class Sequencer:
 
             for i, pat in enumerate(seq):
                 if pat.pattern[index] == 1:
-                    # TODO: replace simple audio with pyaudio for better performance
                     pat.wav.play()
 
             #print(index, end='')
@@ -105,9 +114,12 @@ class Sequencer:
 if __name__=="__main__":
     patterns = []
 
+    print("Test: pass the god damn butter")
+    patterns.append(Pattern(Wav("input/high.wav"), 3))
     patterns.append(Pattern(Wav("input/high.wav"), 4))
-    patterns.append(Pattern(Wav("input/mid.wav"), 5))
-    patterns.append(Pattern(Wav("input/low.wav"), 3))
+    patterns.append(Pattern(Wav("input/high.wav"), 9))
+    #patterns.append(Pattern(Wav("input/mid.wav"), 5))
+    #patterns.append(Pattern(Wav("input/low.wav"), 3))
 
     seq = Sequencer()
 

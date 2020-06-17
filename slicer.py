@@ -7,6 +7,8 @@ import config as cfg
 import sys
 import os
 
+# TODO: integrate sequencer
+
 class Slicer():
     def __init__(self):
         self.files = []
