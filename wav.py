@@ -4,6 +4,7 @@ import simpleaudio as sa # TODO: replace with pyaudio
 import numpy as np
 import wave
 import struct
+
 class ReadHead:
     def __init__(self, wav):
         self.wav = wav

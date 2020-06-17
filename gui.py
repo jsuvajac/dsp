@@ -16,7 +16,11 @@ from tkinter import ttk
 
 
 class Window:
-    def __init__(self, files):
+    def __init__(self, get_wave_list_func, get_wave_func, insert_wave_func):
+        self.get_wave_list = get_wave_list_func
+        self.get_wave = get_wave_func
+        self.insert_wave = insert_wave_func
+
         self.root = Tk()
         self.root.title(cfg.title)
         self.root.geometry(cfg.resolution) 
@@ -63,6 +67,9 @@ class Window:
         button = ttk.Button(master=self.bottom_tray, text="Spectral Plot", command=self.on_display_spectral)
         button.pack(side=LEFT, expand=True)
 
+        button = ttk.Button(master=self.bottom_tray, text="Polar Plot", command=self.on_display_polar)
+        button.pack(side=LEFT, expand=True)
+
         self.display_spectral = False
 
         self.fig = None
@@ -72,11 +79,10 @@ class Window:
 
         self.sample_buttons = []
 
-        self.files = files
         self.slice_count = 1
-        self.display_files(self.files)
+        self.display_files(self.get_wave_list())
 
-        self.slice = Wav(files[0])
+        self.slice = self.get_wave("input/piano.wav")
 
         self.gui_setup()
 
@@ -121,8 +127,9 @@ class Window:
         self.canvas.mpl_connect('button_press_event', self.on_click)
         self.canvas.mpl_connect('key_press_event', self.on_key)
         self.canvas.draw()
-        #self.plot_toolbar = NavigationToolbar2Tk(self.canvas, self.plot_frame).pack(side=side, fill=X)
         self.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=True)
+
+        #self.plot_toolbar = NavigationToolbar2Tk(self.canvas, self.plot_frame).pack(side=side, fill=X)
         #self.plot_toolbar.update()
 
         self.widget_panel_setup(self.widget_frame, TOP)
@@ -236,6 +243,9 @@ class Window:
         plt.draw()
 
 
+
+
+
 # EVENTS
 # TODO: separate events from gui
 
@@ -314,21 +324,69 @@ class Window:
     def on_write_slice_click(self):
         while True:
             path = cfg.dir_slice+"/"+"slice_"+ str(self.slice_count) + ".wav"
-            if path in self.files:
+            if path in self.get_wave_list():
                 print(path)
                 self.slice_count += 1
             else:
                 break
-
-
-        self.files.append(path)
         self.slice.write_slice(path)
+        self.insert_wave(path)
 
-        self.display_files(self.files)
-        #TODO: implement buttom
-        #self.sample_buttons.append(ttk.Frame(self.bottom_frame, width=150, height=150).pack(side=LEFT))
-        #ttk.Button(master=sel.sample_buttons[0], text="play", command=self.slice.play).pack(side=LEFT)
+        self.display_files(self.get_wave_list())
+
+
+        self.create_play_button(path)
+
+
+    def create_play_button(self, path):
+        # display a sample
+        frame = ttk.Frame(self.bottom_frame, width=150, height=150, padding=50)
+        frame.pack(side=LEFT)
+
+        self.sample_buttons.append(frame)
+
+        #fig = FigureCanvasTkAgg(self.fig, master=self.sample_buttons[-1])
+        #fig.draw()
+        #fig.pack(side=TOP, fill=BOTH)
+
+        ttk.Button(master=self.sample_buttons[-1], text=path, command=lambda: self.get_wave(path).play()).pack(side=TOP)
+        ttk.Separator(self.bottom_frame, orient=VERTICAL).pack(side=LEFT, fill=Y)
+
 
     def on_display_spectral(self):
         self.display_spectral = not self.display_spectral
         self.reset_plot()
+
+# 
+#    def on_play_pattern(self):
+#        import threading
+#        t = threading.Thread(target=self.play_ntimes, args=([1,0,1,1,0,1,1,1,0],))
+#        t.start()
+#
+#
+#    def play_ntimes(self, arr):
+#        import time
+#        for y in range(3):
+#            for x in arr:
+#                time.sleep(.1)
+#                if x == 1:
+#                    self.slice.play()
+#
+
+    def on_display_polar(self):
+        #self.plot()
+        #self.fig2.clf()
+        self.fig = plt.figure(1)
+        self.polar_plot = plt.subplot(111, projection='polar')
+        self.polar_plot.plot([1,1,1,1,1,1], "o")
+        #self.wav_plot.set_ylabel('amplitude')
+        #self.wav_plot.axis('off')
+        #self.fig.set_facecolor(cfg.col_bg)
+        #self.setTitle("")
+
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.bottom_tray)
+        #self.canvas.mpl_connect('button_press_event', self.on_click)
+        #self.canvas.mpl_connect('key_press_event', self.on_key)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=True)
+

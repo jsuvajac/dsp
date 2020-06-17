@@ -14,6 +14,7 @@ class Slicer():
         self.dirs = {}
 
         self.wave_files = {}
+        self.gui = None
 
     def parse_dirs(self):
         for folder in self.dir_list:
@@ -43,11 +44,24 @@ class Slicer():
         self.files = list(set(self.files).symmetric_difference(set(bad_files)))
         #print(self.wave_files)
 
+    def run(self):
+        self.gui.run()
+
+    def get_wave_list(self):
+        return self.wave_files
+
     def get_wave(self, name: str) -> Wav:
         return self.wave_files[name]
 
     def insert_wave(self, name: str):
+        self.files.append(name)
         self.wave_files[name] = Wav(name)
+
+    def gui_setup(self):
+        self.gui = Window(self.get_wave_list, self.get_wave,  self.insert_wave)
+        for file in self.files:
+            self.gui.create_play_button(file)
+
 
 
 def main(argc, argv):
@@ -74,8 +88,8 @@ def main(argc, argv):
         app.files.append(argv[1])
     
     app.load_wave_files()
-    gui = Window(app.files)
-    gui.run()
+    app.gui_setup()
+    app.run()
     
 
 if __name__ == "__main__":
