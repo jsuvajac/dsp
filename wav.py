@@ -54,9 +54,10 @@ class Wav:
 
     def apply_speed_change(self, speed: float = 1):
         out_list = []
+
         if speed == 0:
             return
-        if speed >= 1: # speedup
+        elif speed >= 1: # speedup
             out_list = [self.slice_samples[i] for i in range(len(self.slice_samples)) if i % speed == 0]
         elif speed <= -1: # speedup and reverse
             out_list = [self.slice_samples[-i] for i in range(len(self.slice_samples)) if i % speed == 0]
@@ -75,7 +76,7 @@ class Wav:
         print(len(self.slice_samples))
 
         if end < start:
-            self.slice_samples = self.slice_samples[start:end]
+            self.slice_samples = self.slice_samples[end:start]
         else:
             self.slice_samples = self.slice_samples[start:end]
         print(len(self.slice_samples))
