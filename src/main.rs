@@ -35,7 +35,35 @@ impl WavSlice {
     fn apply_speed_change(self: &mut Self, speed: f32) {
         if speed == 0.0 {
             return
+        } else if speed < 0.0 {
+            self.apply_reverse();
         }
+
+        if speed.abs() >= 1.0 {
+            let factor = speed.abs() as usize;
+            //println!("speed factor: {}", factor);
+            self.slice_samples = self.slice_samples.clone()
+                                                   .into_iter()
+                                                   .enumerate()
+                                                   .filter(|&(i, _)| i % factor == 0 )
+                                                   .map(|(_, e)| e)
+                                                   .collect::<Vec<_>>();
+        } else if speed.abs() > 0.0 {
+            let factor = (1.0 / speed.abs()) as usize;
+            //println!("slowdown factor: {}", factor);
+            self.slice_samples = self.slice_samples.clone()
+                                        .into_iter()
+                                        .map(|e| vec![e; factor])
+                                        .flatten()
+                                        .collect::<Vec<_>>();
+            //println!("{:?}", &self.slice_samples[..100]);
+        }
+    }
+
+    fn apply_reverse(self: &mut Self) {
+        //println!("{:?}", &self.slice_samples[..10]);
+        //println!("{:?}", self.slice_samples.len());
+        self.slice_samples.reverse();
     }
 
     fn apply_slice(self: &mut Self, start: usize, end: usize) {
@@ -80,12 +108,17 @@ fn main() {
     // double len
     wav.apply_repeat(2);
     wav.write("slice/test1.wav");
-
     wav.reset_buffer();
 
-    // reset len
-    wav.apply_slice(0, wav.len/5 as usize);
+    // half speed
+    wav.apply_speed_change(-0.25);
     wav.write("slice/test2.wav");
+    wav.reset_buffer();
+
+
+    // reset len
+    wav.apply_slice(0, wav.len/5);
+    wav.write("slice/test3.wav");
 
     wav.reset_buffer();
 
