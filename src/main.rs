@@ -1,128 +1,63 @@
-use hound;
-use std::path::Path;
+extern crate anyhow;
+extern crate cpal;
 
-#[derive(Debug)]
-struct WavSlice {
-    samples: Vec<i16>,
-    slice_samples: Vec<i16>,
-    len: usize
+use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+
+fn main() -> Result<(), anyhow::Error> {
+    let host = cpal::default_host();
+    let device = host
+        .default_output_device()
+        .expect("failed to find a default output device");
+    let config = device.default_output_config()?;
+
+    match config.sample_format() {
+        cpal::SampleFormat::F32 => run::<f32>(&device, &config.into())?,
+        cpal::SampleFormat::I16 => run::<i16>(&device, &config.into())?,
+        cpal::SampleFormat::U16 => run::<u16>(&device, &config.into())?,
+    }
+
+    Ok(())
 }
 
-impl WavSlice {
-    fn new(path: &'static str) -> WavSlice {
-        let mut reader = hound::WavReader::open(path).unwrap();
+fn run<T>(device: &cpal::Device, config: &cpal::StreamConfig) -> Result<(), anyhow::Error>
+where
+    T: cpal::Sample,
+{
+    let sample_rate = config.sample_rate.0 as f32;
+    let channels = config.channels as usize;
 
-        let samples: Vec<i16> = reader.samples().map(|s| s.unwrap()).collect();
-        let slice_samples = samples.clone();
+    // Produce a sinusoid of maximum amplitude.
+    let mut sample_clock = 0f32;
+    let mut next_value = move || {
+        sample_clock = (sample_clock + 1.0) % sample_rate;
+        (sample_clock * 440.0 * 2.0 * 3.141592 / sample_rate).sin() * 0.2
+    };
 
-        let len = slice_samples.len();
+    let err_fn = |err| eprintln!("an error occurred on stream: {}", err);
 
-        assert_eq!(samples, slice_samples);
+    let stream = device.build_output_stream(
+        config,
+        move |data: &mut [T], _: &cpal::OutputCallbackInfo| {
+            write_data(data, channels, &mut next_value)
+        },
+        err_fn,
+    )?;
+    stream.play()?;
 
-        WavSlice { samples: samples, slice_samples: slice_samples, len: len}
-    }
+    std::thread::sleep(std::time::Duration::from_millis(1000));
 
-    fn apply_repeat(self: &mut Self, repeats: usize) {
-        if repeats < 2 {
-            return
-        }
-        for _ in 0..repeats-1 {
-            self.slice_samples.append(&mut self.slice_samples.clone());
-        }
-        self.len = self.slice_samples.len();
-    }
-
-    fn apply_speed_change(self: &mut Self, speed: f32) {
-        if speed == 0.0 {
-            return
-        } else if speed < 0.0 {
-            self.apply_reverse();
-        }
-
-        if speed.abs() >= 1.0 {
-            let factor = speed.abs() as usize;
-            //println!("speed factor: {}", factor);
-            self.slice_samples = self.slice_samples.clone()
-                                                   .into_iter()
-                                                   .enumerate()
-                                                   .filter(|&(i, _)| i % factor == 0 )
-                                                   .map(|(_, e)| e)
-                                                   .collect::<Vec<_>>();
-        } else if speed.abs() > 0.0 {
-            let factor = (1.0 / speed.abs()) as usize;
-            //println!("slowdown factor: {}", factor);
-            self.slice_samples = self.slice_samples.clone()
-                                        .into_iter()
-                                        .map(|e| vec![e; factor])
-                                        .flatten()
-                                        .collect::<Vec<_>>();
-            //println!("{:?}", &self.slice_samples[..100]);
-        }
-    }
-
-    fn apply_reverse(self: &mut Self) {
-        //println!("{:?}", &self.slice_samples[..10]);
-        //println!("{:?}", self.slice_samples.len());
-        self.slice_samples.reverse();
-    }
-
-    fn apply_slice(self: &mut Self, start: usize, end: usize) {
-        if start == end {
-            return
-        }
-
-        else if end < start {
-            self.slice_samples = self.slice_samples[end..start].to_vec();
-        }
-        else if end > start {
-            self.slice_samples = self.slice_samples[start..end].to_vec();
-        }
-        self.len = self.slice_samples.len();
-    }
-    fn write(self: &Self, _path: &'static str) {
-        let spec = hound::WavSpec {
-            channels: 1,
-            sample_rate: 44100,
-            bits_per_sample: 16,
-            sample_format: hound::SampleFormat::Int,
-        };
-
-        let path: &Path = _path.as_ref();
-        let mut writer = hound::WavWriter::create(path, spec).unwrap();
-        
-        for s in self.slice_samples.clone() {
-            writer.write_sample(s).unwrap();
-        }
-        writer.finalize().unwrap();
-    }
-
-    fn reset_buffer(self: &mut Self) {
-        self.slice_samples = self.samples.clone();
-        self.len = self.slice_samples.len();
-    }
+    Ok(())
 }
 
-fn main() {
-    let mut wav = WavSlice::new("input/piano.wav");
-
-    // double len
-    wav.apply_repeat(2);
-    wav.write("slice/test1.wav");
-    wav.reset_buffer();
-
-    // half speed
-    wav.apply_speed_change(-0.25);
-    wav.write("slice/test2.wav");
-    wav.reset_buffer();
-
-
-    // reset len
-    wav.apply_slice(0, wav.len/5);
-    wav.write("slice/test3.wav");
-
-    wav.reset_buffer();
-
-    // reset len
-    wav.reset_buffer();
-    wav.write("slice/test4.wav");
+fn write_data<T>(output: &mut [T], channels: usize, next_sample: &mut dyn FnMut() -> f32)
+where
+    T: cpal::Sample,
+{
+    println!("{:?}", channels);
+    for frame in output.chunks_mut(channels) {
+        let value: T = cpal::Sample::from::<f32>(&next_sample());
+        for sample in frame.iter_mut() {
+            *sample = value;
+        }
+    }
 }

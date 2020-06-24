@@ -8,3 +8,5 @@ edition = "2018"
 
 [dependencies]
 hound = "*"
+cpal = { git = "https://github.com/RustAudio/cpal.git" }
+anyhow = "*"
