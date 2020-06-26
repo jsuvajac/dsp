@@ -2,14 +2,14 @@ use hound;
 use std::path::Path;
 
 #[derive(Debug)]
-struct WavSlice {
+pub struct WavSlice {
     samples: Vec<i16>,
-    slice_samples: Vec<i16>,
-    len: usize
+    pub slice_samples: Vec<i16>,
+    pub len: usize
 }
 
 impl WavSlice {
-    fn new(path: &'static str) -> WavSlice {
+    pub fn new(path: &'static str) -> WavSlice {
         let mut reader = hound::WavReader::open(path).unwrap();
 
         let samples: Vec<i16> = reader.samples().map(|s| s.unwrap()).collect();
@@ -56,13 +56,11 @@ impl WavSlice {
                                         .map(|e| vec![e; factor])
                                         .flatten()
                                         .collect::<Vec<_>>();
-            //println!("{:?}", &self.slice_samples[..100]);
         }
+        self.len = self.slice_samples.len();
     }
 
     fn apply_reverse(self: &mut Self) {
-        //println!("{:?}", &self.slice_samples[..10]);
-        //println!("{:?}", self.slice_samples.len());
         self.slice_samples.reverse();
     }
 
@@ -106,45 +104,78 @@ mod test {
     use super::WavSlice;
 
     #[test]
-    fn test_wav_repeat() {
+    fn repeat() {
         let mut wav = WavSlice::new("input/piano.wav");
         let original_len = wav.len;
 
-        // double len
+        // * 2 len
         wav.apply_repeat(2);
         let double_len = wav.len;
         assert_eq!(original_len*2, double_len);
+
+        // * 4 len
+        wav.apply_repeat(2);
+        let quad_len = wav.len;
+        assert_eq!(original_len*4, quad_len);
     }
 
     #[test]
-    fn test_wav_speed() {
+    fn speed() {
         let mut wav = WavSlice::new("input/piano.wav");
         let original_len = wav.len;
 
 
         // half speed
         wav.apply_speed_change(-0.25);
+        assert_eq!(original_len*4, wav.len);
 
     }
 
     #[test]
-    fn test_wav_slice() {
+    fn reset() {
         let mut wav = WavSlice::new("input/piano.wav");
         let original_len = wav.len;
 
-        // reset len
         wav.apply_slice(0, wav.len/5);
-        println!("{} {}", original_len, wav.len);
+        wav.apply_slice(0, wav.len/5);
+
+        wav.reset_buffer();
+
+        assert_eq!(original_len, wav.len);
     }
 
     #[test]
-    fn test_wav_reverse() {
+    fn write() {
+        use std::fs;
+        use std::path::Path;
+
+        let mut wav = WavSlice::new("input/piano.wav");
+        wav.apply_slice(0, 5);
+        wav.write("input/test_slice.wav");
+
+        assert!(Path::new("input/test_slice.wav").exists());
+        fs::remove_file("input/test_slice.wav");
+    }
+
+    #[test]
+    fn slice() {
+        let mut wav = WavSlice::new("input/piano.wav");
+        let original_len = wav.len;
+
+        wav.apply_slice(0, wav.len/5);
+        assert_eq!(original_len/5, wav.len);
+        assert_eq!(wav.slice_samples, wav.samples[..wav.samples.len()/5].to_vec());
+    }
+
+    #[test]
+    fn reverse() {
         let mut wav = WavSlice::new("input/piano.wav");
         let original_len = wav.len;
 
         // reset len
         wav.apply_reverse();
-        wav.apply_reverse();
+        wav.samples.reverse();
         assert_eq!(wav.slice_samples, wav.samples);
+        assert_eq!(wav.len, original_len);
     }
 }

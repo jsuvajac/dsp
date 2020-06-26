@@ -1,18 +1,23 @@
 # Slicer
-A sound exploration project
+A wave file sampling and slicing project --
+prototyped in python and moving to rust.
 
 ### Run
-```
-pip3 install -r requirements.txt
-python3 slicer.py -d
-```
+    pip3 install -r requirements.txt
+    python3 slicer.py -d
+
+#### rust
+    cargo run
 
 ### Test
-```
-python3 wav.py
-python3 sequencer.py
-```
+    python3 wav.py
+    python3 sequencer.py
+ 
+#### rust
+    cargo test
 
+# prototype
+![image](gui.png)
 ## Gui
 * plot amplitude and spectral graphs
 * apply sample modifying features
@@ -29,7 +34,6 @@ python3 sequencer.py
 * Save the newly formed slice as a new wav file
 
 ### Sample modifying features
-
     reverse
     speed up
     slow down
