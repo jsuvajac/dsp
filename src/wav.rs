@@ -1,7 +1,7 @@
-use hound;
 use std::path::Path;
 
-#[derive(Debug)]
+
+#[derive(Debug, Clone)]
 pub struct WavSlice {
     samples: Vec<i16>,
     pub slice_samples: Vec<i16>,
@@ -19,7 +19,7 @@ impl WavSlice {
 
         assert_eq!(samples, slice_samples);
 
-        WavSlice { samples: samples, slice_samples: slice_samples, len: len}
+        WavSlice { samples, slice_samples, len}
     }
 
     fn apply_repeat(self: &mut Self, repeats: usize) {
@@ -99,9 +99,31 @@ impl WavSlice {
         self.len = self.slice_samples.len();
     }
 }
+
+#[derive(Debug)]
+pub struct ReadHead {
+    slice: WavSlice,
+    index: usize,
+    pub playing: bool
+}
+
+impl ReadHead {
+    pub fn new(wav: WavSlice) -> ReadHead {
+        ReadHead{slice: wav, index: 0 as usize, playing: false}
+    }
+    pub fn get_index(self: &mut Self) -> usize {
+        self.index
+    }
+    pub fn get_next(self: &mut Self) -> i16 {
+        let next = self.slice.slice_samples[self.index];
+        self.index = (self.index + 1) % self.slice.len;
+        next
+    }
+}
+
 #[cfg(test)]
 mod test {
-    use super::WavSlice;
+    use super::*;
 
     #[test]
     fn repeat() {
@@ -178,4 +200,18 @@ mod test {
         assert_eq!(wav.slice_samples, wav.samples);
         assert_eq!(wav.len, original_len);
     }
+
+    #[test]
+    fn read_head() {
+        let wav = WavSlice::new("input/piano.wav");
+        let mut head = ReadHead::new(&wav);
+
+        for i in 0 .. 5 {
+            //println!("{} -> {}", head.get_index(), head.get_next());
+            //println!("{} -> {}", i, wav.slice_samples[i]);
+            assert_eq!(head.get_next(), wav.slice_samples[i]);
+        }
+    }
+
+
 }

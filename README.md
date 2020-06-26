@@ -17,7 +17,7 @@ prototyped in python and moving to rust.
     cargo test
 
 # prototype
-![image](gui.png)
+![image](gui.jpg)
 ## Gui
 * plot amplitude and spectral graphs
 * apply sample modifying features
