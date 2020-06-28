@@ -27,11 +27,17 @@ where
 {
     let channels = config.channels as usize;
 
-    let wav = wav::WavSlice::new("input/piano.wav");
+    let mut wav = wav::WavSlice::new("input/piano.wav");
+    wav.apply_repeat(5);
+    wav.apply_speed_change(0.25*10.0);
     let mut read_head = wav::ReadHead::new(wav.clone());
 
+    let mut wav2 = wav::WavSlice::new("input/piano.wav");
+    let mut read_head2 = wav::ReadHead::new(wav2.clone());
+
     let mut next_value =  move || {
-        read_head.get_next()
+        read_head.get_next() +
+        read_head2.get_next()
     };
 
     let err_fn = |err| eprintln!("an error occurred on stream: {}", err);
@@ -46,7 +52,7 @@ where
     )?;
     stream.play()?;
 
-    std::thread::sleep(std::time::Duration::from_millis(1000));
+    std::thread::sleep(std::time::Duration::from_millis(10000));
 
     Ok(())
 }

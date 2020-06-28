@@ -22,7 +22,7 @@ impl WavSlice {
         WavSlice { samples, slice_samples, len}
     }
 
-    fn apply_repeat(self: &mut Self, repeats: usize) {
+    pub fn apply_repeat(self: &mut Self, repeats: usize) {
         if repeats < 2 {
             return
         }
@@ -32,7 +32,7 @@ impl WavSlice {
         self.len = self.slice_samples.len();
     }
 
-    fn apply_speed_change(self: &mut Self, speed: f32) {
+    pub fn apply_speed_change(self: &mut Self, speed: f32) {
         if speed == 0.0 {
             return
         } else if speed < 0.0 {
@@ -60,11 +60,11 @@ impl WavSlice {
         self.len = self.slice_samples.len();
     }
 
-    fn apply_reverse(self: &mut Self) {
+    pub fn apply_reverse(self: &mut Self) {
         self.slice_samples.reverse();
     }
 
-    fn apply_slice(self: &mut Self, start: usize, end: usize) {
+    pub fn apply_slice(self: &mut Self, start: usize, end: usize) {
         if start == end {
             return
         }
@@ -77,7 +77,7 @@ impl WavSlice {
         }
         self.len = self.slice_samples.len();
     }
-    fn write(self: &Self, _path: &'static str) {
+    pub fn write(self: &Self, _path: &'static str) {
         let spec = hound::WavSpec {
             channels: 1,
             sample_rate: 44100,
@@ -94,7 +94,7 @@ impl WavSlice {
         writer.finalize().unwrap();
     }
 
-    fn reset_buffer(self: &mut Self) {
+    pub fn reset_buffer(self: &mut Self) {
         self.slice_samples = self.samples.clone();
         self.len = self.slice_samples.len();
     }
