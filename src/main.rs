@@ -18,6 +18,8 @@ fn main() -> Result<(), anyhow::Error> {
         cpal::SampleFormat::U16 => run::<u16>(&device, &config.into())?,
     }
 
+    std::thread::sleep(std::time::Duration::from_secs(5));
+
     Ok(())
 }
 
@@ -37,7 +39,7 @@ where
 
     let mut next_value =  move || {
         read_head.get_next() +
-        read_head2.get_next()
+        read_head2.get_next() / 2 as i16
     };
 
     let err_fn = |err| eprintln!("an error occurred on stream: {}", err);
@@ -52,7 +54,7 @@ where
     )?;
     stream.play()?;
 
-    std::thread::sleep(std::time::Duration::from_millis(10000));
+    std::thread::sleep(std::time::Duration::from_secs(10));
 
     Ok(())
 }
