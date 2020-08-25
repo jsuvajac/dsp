@@ -21,7 +21,7 @@ impl WavSlice {
 
         WavSlice { samples, slice_samples, len}
     }
-
+    /// repeats slice_samples 'repeats' number of times
     pub fn apply_repeat(self: &mut Self, repeats: usize) {
         if repeats < 2 {
             return
@@ -32,6 +32,9 @@ impl WavSlice {
         self.len = self.slice_samples.len();
     }
 
+    /// when speed >= 1 samples are repeated
+    /// when 0 < speed < 1 samples are removed
+    /// when speed is negative the order of samples is reversed
     pub fn apply_speed_change(self: &mut Self, speed: f32) {
         if speed == 0.0 {
             return
@@ -60,10 +63,12 @@ impl WavSlice {
         self.len = self.slice_samples.len();
     }
 
+    /// reverse samples
     pub fn apply_reverse(self: &mut Self) {
         self.slice_samples.reverse();
     }
 
+    /// a slice/subset of the samples
     pub fn apply_slice(self: &mut Self, start: usize, end: usize) {
         if start == end {
             return
@@ -77,6 +82,8 @@ impl WavSlice {
         }
         self.len = self.slice_samples.len();
     }
+
+    /// write to wav file
     pub fn write(self: &Self, _path: &'static str) {
         let spec = hound::WavSpec {
             channels: 1,
@@ -94,6 +101,7 @@ impl WavSlice {
         writer.finalize().unwrap();
     }
 
+    /// reset slice_samples to samples
     pub fn reset_buffer(self: &mut Self) {
         self.slice_samples = self.samples.clone();
         self.len = self.slice_samples.len();
@@ -204,7 +212,7 @@ mod test {
     #[test]
     fn read_head() {
         let wav = WavSlice::new("input/piano.wav");
-        let mut head = ReadHead::new(&wav);
+        let mut head = ReadHead::new(wav.clone());
 
         for i in 0 .. 5 {
             //println!("{} -> {}", head.get_index(), head.get_next());

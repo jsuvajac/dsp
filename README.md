@@ -3,21 +3,22 @@ A wave file sampling and slicing project --
 prototyped in python and moving to rust.
 
 ### Run
+    cargo run
+
+### Test
+    cargo test
+
+# Prototype
+![image](prototype/gui.jpg)
+
+### Run
     pip3 install -r requirements.txt
     python3 slicer.py -d
-
-#### rust
-    cargo run
 
 ### Test
     python3 wav.py
     python3 sequencer.py
- 
-#### rust
-    cargo test
 
-# prototype
-![image](gui.jpg)
 ## Gui
 * plot amplitude and spectral graphs
 * apply sample modifying features
