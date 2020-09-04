@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.com/jsuvajac/slicer.svg?branch=master)](https://travis-ci.com/jsuvajac/slicer)
 # Slicer
 A wave file sampling and slicing project --
 prototyped in python and moving to rust.
